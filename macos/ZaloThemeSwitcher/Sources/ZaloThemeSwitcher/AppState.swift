@@ -3,10 +3,18 @@ import Foundation
 import SwiftUI
 
 enum ThemeModeFilter: String, CaseIterable, Identifiable {
-    case all = "All"
-    case light = "Light"
-    case dark = "Dark"
+    case all
+    case light
+    case dark
     var id: String { rawValue }
+
+    func title(_ language: AppLanguage) -> String {
+        switch self {
+        case .all: return L10n.t(.filterAll, language)
+        case .light: return L10n.t(.filterLight, language)
+        case .dark: return L10n.t(.filterDark, language)
+        }
+    }
 }
 
 @MainActor
@@ -38,6 +46,25 @@ final class AppState: ObservableObject {
     @Published var showThemePicker: Bool = false
     @Published var showFontPicker: Bool = false
     @Published var palette: ThemePalette = .system()
+    @Published var language: AppLanguage = AppState.loadSavedLanguage()
+
+    private static func loadSavedLanguage() -> AppLanguage {
+        if let raw = UserDefaults.standard.string(forKey: "appLanguage"),
+           let lang = AppLanguage(rawValue: raw) {
+            return lang
+        }
+        return .vietnamese
+    }
+
+    func t(_ key: L10n.Key) -> String {
+        L10n.t(key, language)
+    }
+
+    func setLanguage(_ language: AppLanguage) {
+        guard self.language != language else { return }
+        self.language = language
+        UserDefaults.standard.set(language.rawValue, forKey: "appLanguage")
+    }
 
     var selectedTheme: ThemeDefinition? {
         guard selectedThemeID != Self.systemThemeID else { return nil }
@@ -82,22 +109,23 @@ final class AppState: ObservableObject {
         if let id = status.themeId, let theme = themes.first(where: { $0.id == id }) {
             return theme.name
         }
-        return status.themed ? (status.themeId ?? "Custom") : "Original Zalo"
+        return status.themed ? (status.themeId ?? t(.customTheme)) : t(.originalZalo)
     }
 
     var headerTitle: String {
-        if isSystemThemeSelected { return "System Default" }
-        return selectedTheme?.name ?? "Select a theme"
+        if isSystemThemeSelected { return t(.systemDefault) }
+        return selectedTheme?.name ?? t(.selectATheme)
     }
 
     var headerSubtitle: String {
         if isSystemThemeSelected {
-            return "Follows macOS Light / Dark · pick a theme to preview"
+            return t(.headerSystemSubtitle)
         }
         if let theme = selectedTheme {
-            return "\(theme.family) · \(theme.mode) · live preview"
+            let modeLabel = theme.isLight ? t(.filterLight) : t(.filterDark)
+            return t(.livePreview(theme.family, modeLabel))
         }
-        return "\(themes.count) themes available"
+        return t(.themesAvailable(themes.count))
     }
 
     func bootstrap() {

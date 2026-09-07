@@ -24,7 +24,7 @@ struct ContentView: View {
         .frame(minWidth: 700, idealWidth: 740, minHeight: 600, idealHeight: 660)
         .background(palette.panel)
         .animation(.easeInOut(duration: 0.2), value: state.selectedThemeID)
-        .task {
+                .task {
             if state.themes.isEmpty {
                 state.bootstrap()
             }
@@ -46,38 +46,38 @@ struct ContentView: View {
         VStack(spacing: 0) {
             headerRow
             thinDivider
-            SettingsRow(title: "Accent") {
+            SettingsRow(title: state.t(.accent)) {
                 TrailingControls {
-                    TextPill(text: state.isSystemThemeSelected ? "System" : (selectedTheme?.mode.capitalized ?? "—"))
+                    TextPill(text: state.isSystemThemeSelected ? state.t(.system) : (selectedTheme?.mode.capitalized ?? "—"))
                     if let theme = selectedTheme {
                         ColorPill(hex: theme.accentHex, color: theme.accentColor)
                     } else {
-                        ColorPill(hex: "SYSTEM", color: palette.accent)
+                        ColorPill(hex: state.t(.systemUpper), color: palette.accent)
                     }
                 }
             }
             thinDivider
-            SettingsRow(title: "Background") {
+            SettingsRow(title: state.t(.background)) {
                 TrailingControls {
                     if let theme = selectedTheme {
                         ColorPill(hex: theme.backgroundHex, color: theme.backgroundColor)
                     } else {
-                        ColorPill(hex: "SYSTEM", color: palette.panel)
+                        ColorPill(hex: state.t(.systemUpper), color: palette.panel)
                     }
                 }
             }
             thinDivider
-            SettingsRow(title: "Foreground") {
+            SettingsRow(title: state.t(.foreground)) {
                 TrailingControls {
                     if let theme = selectedTheme {
                         ColorPill(hex: theme.foregroundHex, color: theme.foregroundColor)
                     } else {
-                        ColorPill(hex: "SYSTEM", color: palette.foreground)
+                        ColorPill(hex: state.t(.systemUpper), color: palette.foreground)
                     }
                 }
             }
             thinDivider
-            SettingsRow(title: "UI font") {
+            SettingsRow(title: state.t(.uiFont)) {
                 Button {
                     state.showFontPicker = true
                 } label: {
@@ -93,7 +93,7 @@ struct ContentView: View {
                 .disabled(state.isBusy)
             }
             thinDivider
-            SettingsRow(title: "Font size") {
+            SettingsRow(title: state.t(.fontSize)) {
                 HStack(spacing: 8) {
                     Button {
                         state.bumpFontSize(by: -AppState.fontSizeStepPercent)
@@ -139,11 +139,11 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, alignment: .trailing)
             }
             thinDivider
-            SettingsRow(title: "Status") {
+            SettingsRow(title: state.t(.status)) {
                 TrailingControls {
                     TextPill(text: state.currentThemeName)
-                    TextPill(text: "\(state.themes.count) themes")
-                    TextPill(text: state.status.hasBackup ? "Backup OK" : "No backup")
+                    TextPill(text: state.t(.themesCount(state.themes.count)))
+                    TextPill(text: state.status.hasBackup ? state.t(.backupOK) : state.t(.noBackup))
                 }
             }
             thinDivider
@@ -183,7 +183,9 @@ struct ContentView: View {
             }
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            Button("Refresh") {
+            LanguageFlagSwitcher()
+
+            Button(state.t(.refresh)) {
                 Task { await state.refreshStatus() }
             }
             .buttonStyle(.plain)
@@ -192,7 +194,7 @@ struct ContentView: View {
             .frame(height: AppDesign.pillHeight)
             .disabled(state.isBusy)
 
-            Button("Restore") {
+            Button(state.t(.restore)) {
                 Task { await state.restoreOriginal() }
             }
             .buttonStyle(.plain)
@@ -207,7 +209,7 @@ struct ContentView: View {
                 HStack(spacing: 8) {
                     Image(systemName: "paintpalette")
                         .font(.system(size: 13, weight: .semibold))
-                    Text("Themes")
+                    Text(state.t(.themes))
                         .font(AppDesign.mono(12, weight: .medium))
                     Image(systemName: "chevron.down")
                         .font(.system(size: 13, weight: .semibold))
@@ -234,14 +236,14 @@ struct ContentView: View {
                         .foregroundStyle(palette.danger)
                         .lineLimit(2)
                 } else if state.isSystemThemeSelected {
-                    Text("Pick a theme to preview it here, then Apply to Zalo")
+                    Text(state.t(.pickThemeHint))
                         .font(AppDesign.mono(11))
                         .foregroundStyle(palette.muted)
                         .lineLimit(1)
                 } else {
                     Text(state.status.zaloExists
-                          ? "Ready · \(state.fontFamilies.count) system fonts · native installer"
-                          : "Zalo not found")
+                          ? state.t(.ready(state.fontFamilies.count))
+                          : state.t(.zaloNotFound))
                         .font(AppDesign.mono(11))
                         .foregroundStyle(palette.muted)
                         .lineLimit(1)
@@ -252,7 +254,7 @@ struct ContentView: View {
             Button {
                 state.showLogs.toggle()
             } label: {
-                TextPill(text: state.showLogs ? "Hide log" : "Show log")
+                TextPill(text: state.showLogs ? state.t(.hideLog) : state.t(.showLog))
             }
             .buttonStyle(.plain)
 
@@ -264,7 +266,7 @@ struct ContentView: View {
                         ProgressView()
                             .controlSize(.mini)
                     }
-                    Text(state.isBusy ? "Working…" : "Apply theme")
+                    Text(state.isBusy ? state.t(.working) : state.t(.applyTheme))
                         .font(AppDesign.mono(12, weight: .semibold))
                 }
                 .foregroundStyle(.white)
@@ -288,7 +290,7 @@ struct ContentView: View {
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(palette.accent)
                 .padding(.top, 1)
-            Text("Please use the default Light theme in the Zalo app for correct color rendering.")
+            Text(state.t(.tipLightTheme))
                 .font(AppDesign.mono(12, weight: .medium))
                 .foregroundStyle(palette.foreground)
                 .fixedSize(horizontal: false, vertical: true)
@@ -310,12 +312,12 @@ struct ContentView: View {
     private var logPanel: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
-                Text("Installer log")
+                Text(state.t(.installerLog))
                     .font(AppDesign.mono(12, weight: .semibold))
                     .foregroundStyle(palette.muted)
                 Spacer()
                 if !state.logText.isEmpty {
-                    Button("Clear") { state.clearLog() }
+                    Button(state.t(.clear)) { state.clearLog() }
                         .buttonStyle(.plain)
                         .font(AppDesign.mono(11, weight: .medium))
                         .foregroundStyle(palette.muted)
@@ -324,9 +326,7 @@ struct ContentView: View {
 
             ScrollViewReader { proxy in
                 ScrollView {
-                    Text(state.logText.isEmpty
-                          ? "Please use the default Light theme in the Zalo app for correct color rendering.\n\nInstaller output will appear here…"
-                          : state.logText)
+                    Text(state.logText.isEmpty ? state.t(.logPlaceholder) : state.logText)
                         .font(AppDesign.mono(11))
                         .foregroundStyle(palette.foreground)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -360,6 +360,43 @@ struct ContentView: View {
     }
 }
 
+struct LanguageFlagSwitcher: View {
+    @EnvironmentObject private var state: AppState
+    @Environment(\.themePalette) private var palette
+
+    var body: some View {
+        HStack(spacing: 4) {
+            flagButton(.vietnamese)
+            flagButton(.english)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(state.t(.languageToggleHint))
+    }
+
+    private func flagButton(_ language: AppLanguage) -> some View {
+        let selected = state.language == language
+        return Button {
+            state.setLanguage(language)
+        } label: {
+            Text(language.flag)
+                .font(.system(size: 18))
+                .frame(width: 34, height: AppDesign.pillHeight)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(selected ? palette.accent.opacity(0.18) : palette.panelSoft)
+                        .overlay(
+                            Capsule(style: .continuous)
+                                .strokeBorder(selected ? palette.accent : palette.panelLine, lineWidth: selected ? 1.5 : 1)
+                        )
+                )
+                .opacity(selected ? 1 : 0.72)
+        }
+        .buttonStyle(.plain)
+        .help(language.accessibilityName)
+        .accessibilityLabel(language.accessibilityName)
+    }
+}
+
 struct ThemePickerSheet: View {
     @EnvironmentObject private var state: AppState
     @Environment(\.themePalette) private var palette
@@ -368,28 +405,28 @@ struct ThemePickerSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 12) {
-                Text("Themes")
+                Text(state.t(.themes))
                     .font(AppDesign.mono(14, weight: .semibold))
                     .foregroundStyle(palette.foreground)
                 Text("\(state.filteredThemes.count)/\(state.themes.count)")
                     .font(AppDesign.mono(11))
                     .foregroundStyle(palette.muted)
                 Spacer()
-                Picker("Mode", selection: $state.themeFilter) {
+                Picker(state.t(.mode), selection: $state.themeFilter) {
                     ForEach(ThemeModeFilter.allCases) { mode in
-                        Text(mode.rawValue).tag(mode)
+                        Text(mode.title(state.language)).tag(mode)
                     }
                 }
                 .pickerStyle(.segmented)
-                .frame(width: 220)
-                Button("Done") { dismiss() }
+                .frame(width: 240)
+                Button(state.t(.done)) { dismiss() }
                     .buttonStyle(.plain)
                     .font(AppDesign.mono(12, weight: .medium))
                     .foregroundStyle(palette.accent)
             }
             .padding(16)
 
-            TextField("Search themes…", text: $state.themeQuery)
+            TextField(state.t(.searchThemes), text: $state.themeQuery)
                 .textFieldStyle(.plain)
                 .font(AppDesign.mono(13))
                 .padding(.horizontal, 12)
@@ -414,10 +451,10 @@ struct ThemePickerSheet: View {
                             )
                             .frame(width: 28, height: 28)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("System Default")
+                            Text(state.t(.systemDefault))
                                 .font(AppDesign.mono(13, weight: .medium))
                                 .foregroundStyle(palette.foreground)
-                            Text("Follow macOS Light / Dark")
+                            Text(state.t(.followMacOS))
                                 .font(AppDesign.mono(11))
                                 .foregroundStyle(palette.muted)
                         }
@@ -485,21 +522,21 @@ struct FontPickerSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("System fonts")
+                Text(state.t(.systemFonts))
                     .font(AppDesign.mono(14, weight: .semibold))
                     .foregroundStyle(palette.foreground)
                 Text("\(state.filteredFonts.count)/\(state.fontFamilies.count)")
                     .font(AppDesign.mono(11))
                     .foregroundStyle(palette.muted)
                 Spacer()
-                Button("Done") { dismiss() }
+                Button(state.t(.done)) { dismiss() }
                     .buttonStyle(.plain)
                     .font(AppDesign.mono(12, weight: .medium))
                     .foregroundStyle(palette.accent)
             }
             .padding(16)
 
-            TextField("Search fonts…", text: $state.fontQuery)
+            TextField(state.t(.searchFonts), text: $state.fontQuery)
                 .textFieldStyle(.plain)
                 .font(AppDesign.mono(13))
                 .padding(.horizontal, 12)
@@ -533,7 +570,7 @@ struct FontPickerSheet: View {
                 .padding(.bottom, 12)
             }
 
-            Text("Preview — The quick brown fox jumps over 123")
+            Text(state.t(.fontPreview))
                 .font(.custom(state.selectedFontFamily, size: 16))
                 .fontWeight(Font.Weight(css: state.selectedFontWeight))
                 .foregroundStyle(palette.foreground)
@@ -553,7 +590,7 @@ struct FontPickerSheet: View {
                             Text(family.name)
                                 .font(.custom(family.name, size: 14))
                                 .foregroundStyle(palette.foreground)
-                            Text("\(family.weights.count) weight\(family.weights.count == 1 ? "" : "s")")
+                            Text(state.t(.weightCount(family.weights.count)))
                                 .font(AppDesign.mono(11))
                                 .foregroundStyle(palette.muted)
                         }
