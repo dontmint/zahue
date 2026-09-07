@@ -12,6 +12,7 @@ enum ThemeModeFilter: String, CaseIterable, Identifiable {
 @MainActor
 final class AppState: ObservableObject {
     static let systemThemeID = "__system__"
+    static let fontSizeOptions: [Int] = [100, 110, 125, 150]
 
     @Published var themes: [ThemeDefinition] = []
     /// `__system__` means follow macOS appearance and do not apply a catalog theme yet.
@@ -22,6 +23,7 @@ final class AppState: ObservableObject {
     @Published var fontFamilies: [SystemFontFamily] = []
     @Published var selectedFontFamily: String = "SF Pro Text"
     @Published var selectedFontWeight: Int = 400
+    @Published var selectedFontSizePercent: Int = 100
     @Published var fontQuery: String = ""
 
     @Published var zaloPath: String = "/Applications/Zalo.app"
@@ -177,6 +179,9 @@ final class AppState: ObservableObject {
                 selectedFontWeight = weight
                 syncWeightForSelectedFont()
             }
+            if let size = status.fontSizePercent, Self.fontSizeOptions.contains(size) {
+                selectedFontSizePercent = size
+            }
             refreshPalette()
         } catch {
             lastError = error.localizedDescription
@@ -196,12 +201,13 @@ final class AppState: ObservableObject {
                 theme: theme,
                 zaloPath: zaloPath,
                 fontFamily: selectedFontFamily,
-                fontWeight: selectedFontWeight
+                fontWeight: selectedFontWeight,
+                fontSizePercent: selectedFontSizePercent
             ) { [weak self] chunk in
                 Task { @MainActor in self?.appendLog(chunk) }
             }
             await refreshStatus(logOutput: false)
-            appendLog("\n[status] applied \(status.themeName ?? theme.name) · font=\(status.fontFamily ?? selectedFontFamily)\n")
+            appendLog("\n[status] applied \(status.themeName ?? theme.name) · font=\(status.fontFamily ?? selectedFontFamily) · size=\(selectedFontSizePercent)%\n")
         } catch {
             lastError = error.localizedDescription
             appendLog("\n[error] \(error.localizedDescription)\n")

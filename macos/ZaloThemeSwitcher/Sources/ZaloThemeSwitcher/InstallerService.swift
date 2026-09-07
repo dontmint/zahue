@@ -41,6 +41,7 @@ final class InstallerService {
             status.themeName = state.themeName
             status.fontFamily = state.fontFamily
             status.fontWeight = state.fontWeight
+            status.fontSizePercent = state.fontSizePercent
             status.themed = true
         }
         return status
@@ -51,6 +52,7 @@ final class InstallerService {
         zaloPath: String,
         fontFamily: String,
         fontWeight: Int,
+        fontSizePercent: Int = 100,
         onOutput: @escaping (String) -> Void
     ) async throws {
         let resources = resourcesDir(zaloPath)
@@ -67,7 +69,7 @@ final class InstallerService {
         // Fast path: already unpacked + themed (or backup exists)
         if isDir(appAsar.path), readInstalledState(appAsarPath: appAsar) != nil || isFile(bak.path) {
             onOutput("[info] Updating theme assets in existing unpacked app.asar\n")
-            try writeThemeAssets(appRoot: appAsar, theme: theme, fontFamily: fontFamily, fontWeight: fontWeight, onOutput: onOutput)
+            try writeThemeAssets(appRoot: appAsar, theme: theme, fontFamily: fontFamily, fontWeight: fontWeight, fontSizePercent: fontSizePercent, onOutput: onOutput)
             try ThemeCSSBuilder.patchIndexHTML(at: appAsar, themeId: theme.id)
             onOutput("[info] Patched \(appAsar.appendingPathComponent("pc-dist/index.html").path)\n")
             onOutput("{\"ok\":true,\"action\":\"switch\",\"themeId\":\"\(theme.id)\"}\n")
@@ -95,7 +97,7 @@ final class InstallerService {
         try fm.createDirectory(at: tmpRoot, withIntermediateDirectories: true)
         onOutput("[info] Extracting \(appAsar.path)\n")
         try AsarExtractor.extractAll(archiveURL: appAsar, to: extract)
-        try writeThemeAssets(appRoot: extract, theme: theme, fontFamily: fontFamily, fontWeight: fontWeight, onOutput: onOutput)
+        try writeThemeAssets(appRoot: extract, theme: theme, fontFamily: fontFamily, fontWeight: fontWeight, fontSizePercent: fontSizePercent, onOutput: onOutput)
         try ThemeCSSBuilder.patchIndexHTML(at: extract, themeId: theme.id)
         onOutput("[info] Patched \(extract.appendingPathComponent("pc-dist/index.html").path)\n")
 
@@ -139,6 +141,7 @@ final class InstallerService {
         var mode: String?
         var fontFamily: String?
         var fontWeight: Int?
+        var fontSizePercent: Int?
     }
 
     private func writeThemeAssets(
@@ -146,11 +149,13 @@ final class InstallerService {
         theme: ThemeDefinition,
         fontFamily: String,
         fontWeight: Int,
+        fontSizePercent: Int,
         onOutput: @escaping (String) -> Void
     ) throws {
         let dest = appRoot.appendingPathComponent("pc-dist/\(ThemeCSSBuilder.assetDirName)", isDirectory: true)
         try fm.createDirectory(at: dest, withIntermediateDirectories: true)
-        let css = ThemeCSSBuilder.css(theme: theme, fontFamily: fontFamily, fontWeight: fontWeight)
+        let sizePercent = [100, 110, 125, 150].contains(fontSizePercent) ? fontSizePercent : 100
+        let css = ThemeCSSBuilder.css(theme: theme, fontFamily: fontFamily, fontWeight: fontWeight, fontSizePercent: sizePercent)
         let js = ThemeCSSBuilder.js(themeId: theme.id)
         try css.write(to: dest.appendingPathComponent("theme.css"), atomically: true, encoding: .utf8)
         try js.write(to: dest.appendingPathComponent("theme.js"), atomically: true, encoding: .utf8)
@@ -161,6 +166,7 @@ final class InstallerService {
             "mode": theme.mode,
             "fontFamily": fontFamily.isEmpty ? "Maple Mono" : fontFamily,
             "fontWeight": fontWeight == 0 ? 600 : fontWeight,
+            "fontSizePercent": sizePercent,
             "installedAt": ISO8601DateFormatter().string(from: Date()),
             "tool": "zalo-theme-switcher",
             "source": "native-swift"
@@ -172,7 +178,7 @@ final class InstallerService {
         if isDir(legacy.path) {
             try? fm.removeItem(at: legacy)
         }
-        onOutput("[info] Copied theme assets → \(dest.path) (\(theme.id), font=\(fontFamily) \(fontWeight))\n")
+        onOutput("[info] Copied theme assets → \(dest.path) (\(theme.id), font=\(fontFamily) \(fontWeight), size=\(sizePercent)%)\n")
     }
 
     private func readInstalledState(appAsarPath: URL) -> InstalledState? {

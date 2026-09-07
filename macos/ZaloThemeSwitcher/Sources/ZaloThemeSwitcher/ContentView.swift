@@ -93,6 +93,32 @@ struct ContentView: View {
                 .disabled(state.isBusy)
             }
             thinDivider
+            SettingsRow(title: "Font size") {
+                TrailingControls {
+                    ForEach(AppState.fontSizeOptions, id: \.self) { percent in
+                        Button {
+                            state.selectedFontSizePercent = percent
+                        } label: {
+                            Text("\(percent)%")
+                                .font(AppDesign.mono(11, weight: .medium))
+                                .foregroundStyle(state.selectedFontSizePercent == percent ? Color.white : palette.foreground)
+                                .padding(.horizontal, 10)
+                                .frame(height: AppDesign.pillHeight)
+                                .background(
+                                    Capsule(style: .continuous)
+                                        .fill(state.selectedFontSizePercent == percent ? palette.accent : palette.panelSoft)
+                                        .overlay(
+                                            Capsule(style: .continuous)
+                                                .strokeBorder(palette.panelLine.opacity(state.selectedFontSizePercent == percent ? 0 : 1), lineWidth: 1)
+                                        )
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(state.isBusy)
+                    }
+                }
+            }
+            thinDivider
             SettingsRow(title: "Status") {
                 TrailingControls {
                     TextPill(text: state.currentThemeName)

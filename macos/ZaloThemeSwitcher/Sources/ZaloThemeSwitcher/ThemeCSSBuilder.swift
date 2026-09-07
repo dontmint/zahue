@@ -5,7 +5,7 @@ enum ThemeCSSBuilder {
     static let marker = "data-zalo-theme-tool"
     static let stateFile = "theme-state.json"
 
-    static func css(theme: ThemeDefinition, fontFamily: String, fontWeight: Int) -> String {
+    static func css(theme: ThemeDefinition, fontFamily: String, fontWeight: Int, fontSizePercent: Int = 100) -> String {
         let bg = theme.background
         let fg = theme.foreground
         let accent = theme.accent
@@ -32,6 +32,8 @@ enum ThemeCSSBuilder {
         let family = fontFamily.isEmpty ? "Maple Mono" : fontFamily
         let weight = fontWeight == 0 ? 600 : fontWeight
         let strong = min(900, weight + 100)
+        let sizePercent = [100, 110, 125, 150].contains(fontSizePercent) ? fontSizePercent : 100
+        let sizeScale = String(format: "%.2f", Double(sizePercent) / 100.0)
         let selection = theme.selectionBg ?? HexColor.rgba(accent, 0.35)
         let onColor = isLight ? "#FFFFFF" : bg
 
@@ -45,9 +47,16 @@ enum ThemeCSSBuilder {
           --zalo-ui-font: "\(family)", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
           --zalo-ui-weight: \(weight);
           --zalo-ui-weight-strong: \(strong);
+          --zalo-ui-font-scale: \(sizeScale);
+          --zalo-ui-font-size-percent: \(sizePercent)%;
           --medium: \(weight);
           --semibold: \(weight);
           --bold: \(strong);
+        }
+
+        /* Zalo uses rem extensively — scale the root to enlarge chat/UI text. */
+        html[data-zalo-theme="\(theme.id)"] {
+          font-size: \(sizePercent)% !important;
         }
 
         html[data-zalo-theme="\(theme.id)"] {

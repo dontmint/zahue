@@ -64,6 +64,7 @@ struct InstallerStatus: Equatable {
     var themeName: String?
     var fontFamily: String?
     var fontWeight: Int?
+    var fontSizePercent: Int?
     var themed: Bool = false
     var appAsarIsDirectory: Bool = false
     var themeCount: Int = 0
