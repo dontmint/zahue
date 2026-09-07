@@ -95,3 +95,24 @@ install.js         # ASAR extract → inject → replace
 - Colors: edit `assets/theme.css` (`--rp-*` variables)
 - Font: change `--zalo-maple-font`
 - Then run `node install.js install` again
+
+
+## macOS Theme Switcher (SwiftUI)
+
+Build a native app to switch Dawn / Moon / Main themes:
+
+```bash
+./macos/scripts/build-app.sh
+open dist/ZaloThemeSwitcher.app
+```
+
+See [macos/README.md](./macos/README.md).
+
+### CLI multi-theme
+
+```bash
+node install.js install rose-pine-dawn
+node install.js install rose-pine-moon
+node install.js install rose-pine
+node install.js uninstall
+```

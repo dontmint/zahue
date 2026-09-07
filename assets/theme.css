@@ -1,9 +1,20 @@
 /*
-  Zalo Theme — Maple Font + Rosé Pine Dawn
-  Light pastel theme mapped onto Zalo CSS design tokens.
+  Zalo Themes — Maple Font + Rosé Pine (Dawn / Moon / Main)
 */
 
 :root {
+  --zalo-maple-font: "Maple Mono", "Maple Mono NL", "Maple Mono NF",
+    "Maple Mono Normal", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+  --zalo-maple-weight: 600;
+  --zalo-maple-weight-strong: 700;
+  --medium: 600;
+  --semibold: 600;
+  --bold: 700;
+}
+
+/* Dawn (light) */
+html[data-zalo-theme="rose-pine-dawn"] {
   --rp-base: #faf4ed;
   --rp-surface: #fffaf3;
   --rp-overlay: #f2e9e1;
@@ -19,19 +30,83 @@
   --rp-hl-low: #f4ede8;
   --rp-hl-med: #dfdad9;
   --rp-hl-high: #cecacd;
-
-  --zalo-maple-font: "Maple Mono", "Maple Mono NL", "Maple Mono NF",
-    "Maple Mono Normal", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
-    sans-serif;
-  /* Maple Mono weights: 400 Regular, 500 Medium, 600 SemiBold, 700 Bold */
-  --zalo-maple-weight: 600;
-  --zalo-maple-weight-strong: 700;
-  --medium: 600;
-  --semibold: 600;
-  --bold: 700;
+  --rp-self-bubble: #e4eef1;
+  --rp-self-bubble-border: #c5dbe1;
+  --rp-self-selected: #d5e6eb;
+  --rp-selection: rgba(86, 148, 159, 0.35);
+  --message-view-gradient: linear-gradient(to top, #f4ede8, #faf4ed);
+  --item-select: #e6f0f3;
+  --B10: #e6f0f3; --B15: #e6f0f3; --B20: #d4e7ec; --B25: #d4e7ec;
+  --B30: #a8cdd5; --B40: #7db3bf;
+  --R10: #f7e8ec; --R15: #f7e8ec; --R20: #f0d3db; --R25: #f0d3db;
+  --R30: #db9aaa; --R40: #c87a90;
+  --BA100: #fff;
+  --WA100: var(--rp-surface);
 }
 
-html[data-zalo-theme="rose-pine-dawn"] {
+/* Moon (soft dark) */
+html[data-zalo-theme="rose-pine-moon"] {
+  --rp-base: #232136;
+  --rp-surface: #2a273f;
+  --rp-overlay: #393552;
+  --rp-muted: #6e6a86;
+  --rp-subtle: #908caa;
+  --rp-text: #e0def4;
+  --rp-love: #eb6f92;
+  --rp-gold: #f6c177;
+  --rp-rose: #ea9a97;
+  --rp-pine: #3e8fb0;
+  --rp-foam: #9ccfd8;
+  --rp-iris: #c4a7e7;
+  --rp-hl-low: #2a283e;
+  --rp-hl-med: #44415a;
+  --rp-hl-high: #56526e;
+  --rp-self-bubble: #393552;
+  --rp-self-bubble-border: #56526e;
+  --rp-self-selected: #44415a;
+  --rp-selection: rgba(62, 143, 176, 0.4);
+  --message-view-gradient: linear-gradient(to top, #232136, #2a273f);
+  --item-select: #393552;
+  --B10: #1d3a48; --B15: #1d3a48; --B20: #244b5c; --B25: #244b5c;
+  --B30: #2f6278; --B40: #3e8fb0;
+  --R10: #4a2433; --R15: #4a2433; --R20: #5c2d40; --R25: #5c2d40;
+  --R30: #7a3d55; --R40: #b85d78;
+  --BA100: #fff;
+  --WA100: var(--rp-surface);
+}
+
+/* Main (dark) */
+html[data-zalo-theme="rose-pine"] {
+  --rp-base: #191724;
+  --rp-surface: #1f1d2e;
+  --rp-overlay: #26233a;
+  --rp-muted: #6e6a86;
+  --rp-subtle: #908caa;
+  --rp-text: #e0def4;
+  --rp-love: #eb6f92;
+  --rp-gold: #f6c177;
+  --rp-rose: #ebbcba;
+  --rp-pine: #31748f;
+  --rp-foam: #9ccfd8;
+  --rp-iris: #c4a7e7;
+  --rp-hl-low: #21202e;
+  --rp-hl-med: #403d52;
+  --rp-hl-high: #524f67;
+  --rp-self-bubble: #26233a;
+  --rp-self-bubble-border: #524f67;
+  --rp-self-selected: #403d52;
+  --rp-selection: rgba(49, 116, 143, 0.45);
+  --message-view-gradient: linear-gradient(to top, #191724, #1f1d2e);
+  --item-select: #26233a;
+  --B10: #16303c; --B15: #16303c; --B20: #1d3f4e; --B25: #1d3f4e;
+  --B30: #27566a; --B40: #31748f;
+  --R10: #3f1d2a; --R15: #3f1d2a; --R20: #522536; --R25: #522536;
+  --R30: #6e3349; --R40: #b85d78;
+  --BA100: #fff;
+  --WA100: var(--rp-surface);
+}
+
+html[data-zalo-theme^="rose-pine"] {
   --N10: var(--rp-hl-low);
   --N15: var(--rp-hl-low);
   --N20: var(--rp-overlay);
@@ -62,14 +137,8 @@ html[data-zalo-theme="rose-pine-dawn"] {
   --NG85: var(--rp-text);
   --NG90: var(--rp-text);
   --NG95: var(--rp-text);
-  --NG100: #ffffff;
+  --NG100: var(--rp-text);
 
-  --B10: #e6f0f3;
-  --B15: #e6f0f3;
-  --B20: #d4e7ec;
-  --B25: #d4e7ec;
-  --B30: #a8cdd5;
-  --B40: #7db3bf;
   --B50: var(--rp-foam);
   --B55: var(--rp-foam);
   --B60: var(--rp-pine);
@@ -79,16 +148,10 @@ html[data-zalo-theme="rose-pine-dawn"] {
   --B90: var(--rp-pine);
   --B95: var(--rp-pine);
   --B100: var(--rp-pine);
-  --B50-alpha-10: rgba(86, 148, 159, 0.1);
-  --B50-alpha-20: rgba(86, 148, 159, 0.2);
-  --B50-alpha-30: rgba(86, 148, 159, 0.3);
+  --B50-alpha-10: color-mix(in srgb, var(--rp-foam) 10%, transparent);
+  --B50-alpha-20: color-mix(in srgb, var(--rp-foam) 20%, transparent);
+  --B50-alpha-30: color-mix(in srgb, var(--rp-foam) 30%, transparent);
 
-  --R10: #f7e8ec;
-  --R15: #f7e8ec;
-  --R20: #f0d3db;
-  --R25: #f0d3db;
-  --R30: #db9aaa;
-  --R40: #c87a90;
   --R50: var(--rp-love);
   --R55: var(--rp-love);
   --R60: var(--rp-love);
@@ -98,39 +161,31 @@ html[data-zalo-theme="rose-pine-dawn"] {
   --R90: var(--rp-love);
   --R95: var(--rp-love);
   --R100: var(--rp-love);
-  --R50-alpha-10: rgba(180, 99, 122, 0.1);
-  --R50-alpha-20: rgba(180, 99, 122, 0.2);
-  --R50-alpha-30: rgba(180, 99, 122, 0.3);
+  --R50-alpha-10: color-mix(in srgb, var(--rp-love) 10%, transparent);
+  --R50-alpha-20: color-mix(in srgb, var(--rp-love) 20%, transparent);
+  --R50-alpha-30: color-mix(in srgb, var(--rp-love) 30%, transparent);
 
-  --OR50: var(--rp-gold);
-  --OR55: var(--rp-gold);
-  --OR60: var(--rp-gold);
-  --Y50: var(--rp-gold);
-  --Y60: var(--rp-gold);
-  --G50: var(--rp-foam);
-  --G60: var(--rp-foam);
-  --P50: var(--rp-iris);
-  --P60: var(--rp-iris);
-  --PK50: var(--rp-rose);
-  --PK60: var(--rp-rose);
+  --OR50: var(--rp-gold); --OR55: var(--rp-gold); --OR60: var(--rp-gold);
+  --Y50: var(--rp-gold); --Y60: var(--rp-gold);
+  --G50: var(--rp-foam); --G60: var(--rp-foam);
+  --P50: var(--rp-iris); --P60: var(--rp-iris);
+  --PK50: var(--rp-rose); --PK60: var(--rp-rose);
 
   --BA0: transparent;
-  --BA10: rgba(87, 82, 121, 0.08);
-  --BA20: rgba(87, 82, 121, 0.12);
-  --BA30: rgba(87, 82, 121, 0.18);
-  --BA40: rgba(87, 82, 121, 0.25);
-  --BA50: rgba(87, 82, 121, 0.35);
-  --BA70: rgba(87, 82, 121, 0.55);
-  --BA80: rgba(87, 82, 121, 0.7);
-  --BA100: #fff;
+  --BA10: color-mix(in srgb, var(--rp-text) 8%, transparent);
+  --BA20: color-mix(in srgb, var(--rp-text) 12%, transparent);
+  --BA30: color-mix(in srgb, var(--rp-text) 18%, transparent);
+  --BA40: color-mix(in srgb, var(--rp-text) 25%, transparent);
+  --BA50: color-mix(in srgb, var(--rp-text) 35%, transparent);
+  --BA70: color-mix(in srgb, var(--rp-text) 55%, transparent);
+  --BA80: color-mix(in srgb, var(--rp-text) 70%, transparent);
 
   --WA0: transparent;
-  --WA10: rgba(250, 244, 237, 0.4);
-  --WA15: rgba(242, 233, 225, 0.7);
-  --WA50: rgba(255, 250, 243, 0.7);
-  --WA70: rgba(255, 250, 243, 0.85);
-  --WA80: rgba(255, 250, 243, 0.92);
-  --WA100: var(--rp-surface);
+  --WA10: color-mix(in srgb, var(--rp-base) 40%, transparent);
+  --WA15: color-mix(in srgb, var(--rp-overlay) 70%, transparent);
+  --WA50: color-mix(in srgb, var(--rp-surface) 70%, transparent);
+  --WA70: color-mix(in srgb, var(--rp-surface) 85%, transparent);
+  --WA80: color-mix(in srgb, var(--rp-surface) 92%, transparent);
 
   --bg-default: var(--rp-surface);
   --title-bar: var(--rp-base);
@@ -143,20 +198,19 @@ html[data-zalo-theme="rose-pine-dawn"] {
   --layer-background-subtle: var(--rp-base);
   --layer-background-hover: var(--rp-hl-low);
   --layer-background-disabled: var(--rp-overlay);
-  --layer-background-selected: #e6f0f3;
+  --layer-background-selected: var(--item-select);
   --layer-background-inverse: var(--rp-text);
   --layer-background-inverse-subtle: var(--rp-subtle);
 
   --layer-background-leftmenu: var(--rp-base);
   --layer-background-leftmenu-hover: var(--rp-overlay);
   --layer-background-leftmenu-selected: var(--rp-overlay);
-
   --layer-background-navbar-normal: var(--rp-base);
   --layer-background-navbar-hover: var(--rp-overlay);
   --layer-background-navbar-selected: var(--rp-overlay);
 
   --text-primary: var(--rp-text);
-  --text-primary-50: rgba(87, 82, 121, 0.55);
+  --text-primary-50: color-mix(in srgb, var(--rp-text) 55%, transparent);
   --text-secondary: var(--rp-subtle);
   --text-placeholder: var(--rp-muted);
   --text-disabled: var(--rp-muted);
@@ -188,7 +242,6 @@ html[data-zalo-theme="rose-pine-dawn"] {
   --border-success: var(--rp-foam);
   --border-warning: var(--rp-gold);
   --border-information: var(--rp-pine);
-
   --divider: var(--rp-hl-med);
   --divider-subtle: var(--rp-hl-low);
   --divider-bold: var(--rp-hl-high);
@@ -199,23 +252,22 @@ html[data-zalo-theme="rose-pine-dawn"] {
   --tab-inactive: var(--rp-subtle);
   --tab-active: var(--rp-pine);
 
-  --message-view-gradient: linear-gradient(to top, #f4ede8, #faf4ed);
   --scrollbar: var(--rp-hl-high);
   --scrollbar-opacity: 0.55;
-  --selection: rgba(86, 148, 159, 0.35);
+  --selection: var(--rp-selection);
   --selection-text: var(--rp-text);
 
-  --blue-message: #e4eef1;
-  --blue-message-selected: #d5e6eb;
-  --blue-message-selected-border: #b7d2d9;
-  --blue-message-border: #c5dbe1;
-  --blue-message-action: #d9e8ec;
-  --blue-message-action-border: #b7d2d9;
-  --blue-message-btn: #cfe0e6;
-  --blue-message-btn-border: #a8cdd5;
-  --blue-quote: #dce9ed;
-  --blue-quote-selected: #dce9ed;
-  --blue-quote-border: #b7d2d9;
+  --blue-message: var(--rp-self-bubble);
+  --blue-message-selected: var(--rp-self-selected);
+  --blue-message-selected-border: var(--rp-self-bubble-border);
+  --blue-message-border: var(--rp-self-bubble-border);
+  --blue-message-action: var(--rp-self-selected);
+  --blue-message-action-border: var(--rp-self-bubble-border);
+  --blue-message-btn: var(--rp-overlay);
+  --blue-message-btn-border: var(--rp-hl-med);
+  --blue-quote: var(--rp-overlay);
+  --blue-quote-selected: var(--rp-overlay);
+  --blue-quote-border: var(--rp-self-bubble-border);
   --blue-quote-line: var(--rp-foam);
   --blue-link: var(--rp-pine);
   --blue-file-progress-track: var(--rp-overlay);
@@ -237,11 +289,11 @@ html[data-zalo-theme="rose-pine-dawn"] {
   --white-file-progress-track: var(--rp-hl-med);
 
   --button-primary-normal: var(--rp-pine);
-  --button-primary-hover: #1f5870;
-  --button-primary-pressed: #18485c;
+  --button-primary-hover: var(--rp-foam);
+  --button-primary-pressed: var(--rp-pine);
   --button-primary-text: #fff;
-  --button-secondary-normal: rgba(86, 148, 159, 0.12);
-  --button-secondary-hover: rgba(86, 148, 159, 0.2);
+  --button-secondary-normal: color-mix(in srgb, var(--rp-foam) 12%, transparent);
+  --button-secondary-hover: color-mix(in srgb, var(--rp-foam) 20%, transparent);
   --button-secondary-text: var(--rp-pine);
   --button-danger-normal: var(--rp-love);
   --button-danger-text: #fff;
@@ -254,11 +306,11 @@ html[data-zalo-theme="rose-pine-dawn"] {
   --field-bg-outline-hover: var(--rp-hl-low);
 
   --item-wa-hover: var(--rp-hl-low);
-  --item-wa-select: #e6f0f3;
+  --item-wa-select: var(--item-select);
   --brand-primary: var(--rp-pine);
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme {
   font-family: var(--zalo-maple-font) !important;
   font-weight: var(--zalo-maple-weight) !important;
   background-color: var(--rp-surface);
@@ -266,71 +318,77 @@ html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn {
   -webkit-font-smoothing: antialiased;
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .message-view,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .card--text,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .rich-input,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .rich-text-input,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .chat-box-input__content__input,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .conv-message,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .z-conv-message,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .chat-info-general__item--title,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .title-name {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .message-view,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .card--text,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .rich-input,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .rich-text-input,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .chat-box-input__content__input,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .conv-message,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .z-conv-message,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .chat-info-general__item--title,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .title-name {
   font-family: var(--zalo-maple-font) !important;
   font-weight: var(--zalo-maple-weight) !important;
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn b,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn strong,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .font-semibold,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn [style*="font-weight: 500"],
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn [style*="font-weight:500"] {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme b,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme strong,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .font-semibold,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme [style*="font-weight: 500"],
+html[data-zalo-theme^="rose-pine"] body.zalo-theme [style*="font-weight:500"] {
   font-weight: var(--zalo-maple-weight-strong) !important;
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .message-view__blur__overlay,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .message-view__blur__overlay_noavatar {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .message-view__blur__overlay,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .message-view__blur__overlay_noavatar {
   background-image: var(--message-view-gradient) !important;
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn #main-tab {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme #main-tab {
   border-right: 1px solid var(--border);
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn.zalo-maple-dawn--darwin .nav__tabs__zalo {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme.zalo-theme--darwin .nav__tabs__zalo {
   padding-top: 40px;
   padding-bottom: 16px;
   height: auto;
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .leftbar-tab {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .leftbar-tab {
   color: var(--rp-subtle);
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .leftbar-tab:hover,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .leftbar-tab.selected {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .leftbar-tab:hover,
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .leftbar-tab.selected {
   color: var(--rp-pine);
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .card.me {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .card.me {
   background-color: var(--blue-message);
   border-color: var(--blue-message-border);
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .card:not(.me) {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .card:not(.me) {
   background-color: var(--white-message);
   border-color: var(--white-message-border);
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn ::selection {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme ::selection {
   background: var(--selection) !important;
   color: var(--selection-text) !important;
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn div::-webkit-scrollbar-thumb {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme div::-webkit-scrollbar-thumb {
   background: var(--scrollbar) !important;
   opacity: var(--scrollbar-opacity) !important;
 }
 
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .setting-section:has(> .setting-section-content__theme) {
+html[data-zalo-theme^="rose-pine"] body.zalo-theme .setting-section:has(> .setting-section-content__theme) {
   display: none;
+}
+
+/* Back-compat with first Dawn-only install class names */
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn {
+  font-family: var(--zalo-maple-font) !important;
+  font-weight: var(--zalo-maple-weight) !important;
 }
