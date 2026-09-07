@@ -1,13 +1,13 @@
 [package]
-name = "zalo-theme-switcher-windows"
+name = "zahue-windows"
 version = "0.1.0"
-description = "Zalo Theme Switcher for Windows"
+description = "ZaHue for Windows — Zalo PC theme switcher"
 authors = ["you"]
 edition = "2021"
 license = "MPL-2.0"
 
 [lib]
-name = "zalo_theme_switcher_windows_lib"
+name = "zahue_windows_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

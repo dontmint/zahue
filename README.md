@@ -1,6 +1,6 @@
-# Zalo Theme — Maple Font + Rosé Pine Dawn
+# ZaHue
 
-Minimal custom macOS theme injector for **Zalo PC**.
+**ZaHue** — custom theme switcher for **Zalo PC** (macOS + Windows).
 
 Not a ZaDark fork with full UI — just:
 
@@ -97,13 +97,13 @@ install.js         # ASAR extract → inject → replace
 - Then run `node install.js install` again
 
 
-## macOS Theme Switcher (SwiftUI)
+## ZaHue for macOS (SwiftUI)
 
 Fully **native Swift** installer (no Node.js in the app):
 
 ```bash
 ./macos/scripts/build-app.sh
-open dist/ZaloThemeSwitcher.app
+open dist/ZaHue.app
 ```
 
 - Default UI follows **System Default** (macOS Light/Dark)
@@ -113,9 +113,9 @@ open dist/ZaloThemeSwitcher.app
 
 Optional developer CLI (Node) still available in `install.js`, but the `.app` does not use it.
 
-See [macos/README.md](./macos/README.md).
+See [macos/README.md](./macos/README.md) for ZaHue macOS details.
 
-## Windows Theme Switcher (Tauri)
+## ZaHue for Windows (Tauri)
 
 Cross-platform GUI twin for Windows (React + Rust installer):
 
@@ -131,7 +131,7 @@ npm run tauri:build    # produce .exe / .msi on a Windows machine
 - Vietnamese / English UI, theme preview, font size, Apply / Restore
 - Build the Windows binary on Windows (or Windows CI)
 
-See [windows/README.md](./windows/README.md).
+See [windows/README.md](./windows/README.md) for ZaHue Windows details.
 
 Shared CLI also supports Windows:
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Zalo PC multi-theme installer (macOS + Windows)
+ * ZaHue installer for Zalo PC (macOS + Windows)
  * Themes sourced from https://terminalcolors.com (Alacritty palettes)
  * Technique adapted from ZaDark (MPL-2.0): https://github.com/ncdai/zadark
  *
@@ -161,7 +161,7 @@ function themeCssSource (theme, fontFamily, fontWeight) {
   const strong = Math.min(900, weight + 100)
 
   return `/*
-  Zalo Theme — ${theme.name}
+  ZaHue — ${theme.name}
   Source: terminalcolors.com / ${theme.id}
 */
 :root {
@@ -336,7 +336,7 @@ html[data-zalo-theme="${theme.id}"] body.zalo-theme .setting-section:has(> .sett
 
 function themeJsSource (themeId) {
   return `/*
-  Zalo Theme bootstrap — ${themeId}
+  ZaHue bootstrap — ${themeId}
 */
 (function () {
   const THEME = ${JSON.stringify(themeId)}
@@ -346,7 +346,7 @@ function themeJsSource (themeId) {
   body.classList.add('zalo-theme')
   body.classList.remove('zalo-maple-dawn', 'zalo-maple-dawn--darwin')
   if (html.getAttribute('data-zalo-os') === 'macOS') body.classList.add('zalo-theme--darwin')
-  console.info('[zalo-theme]', THEME, 'active')
+  console.info('[zahue]', THEME, 'active')
 })()
 `
 }
@@ -399,7 +399,7 @@ function copyThemeAssets (appRoot, theme, fontFamily, fontWeight) {
     fontFamily: fontFamily || 'Maple Mono',
     fontWeight: Number(fontWeight) || 600,
     installedAt: new Date().toISOString(),
-    tool: 'zalo-theme-switcher',
+    tool: 'zahue',
     source: 'terminalcolors.com'
   }, { spaces: 2 })
   const legacy = path.join(appRoot, 'pc-dist', 'zalo-maple-dawn')

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Download a portable Node.js binary for embedding in ZaloThemeSwitcher.app.
+# Download a portable Node.js binary for embedding in ZaHue.app.
 # Regular users should not need a system Node install.
 set -euo pipefail
 

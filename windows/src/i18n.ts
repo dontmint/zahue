@@ -2,7 +2,7 @@ export type Lang = "vi" | "en";
 
 const dict = {
   en: {
-    title: "Zalo Theme Switcher",
+    title: "ZaHue",
     subtitleSystem: "Follows Windows Light / Dark · pick a theme to preview",
     themes: "Themes",
     restore: "Restore",
@@ -39,7 +39,7 @@ const dict = {
     path: "Zalo path",
   },
   vi: {
-    title: "Zalo Theme Switcher",
+    title: "ZaHue",
     subtitleSystem: "Theo Sáng / Tối Windows · chọn chủ đề để xem trước",
     themes: "Chủ đề",
     restore: "Khôi phục",

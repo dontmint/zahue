@@ -1,9 +1,9 @@
 {
-  "name": "zalo-theme-switcher-windows",
+  "name": "zahue-windows",
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "Windows GUI for Zalo PC theme switching (Tauri + React)",
+  "description": "ZaHue for Windows — Zalo PC theme switcher (Tauri + React)",
   "license": "MPL-2.0",
   "scripts": {
     "dev": "vite",

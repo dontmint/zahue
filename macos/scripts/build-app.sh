@@ -2,15 +2,15 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-PKG="$ROOT/macos/ZaloThemeSwitcher"
+PKG="$ROOT/macos/ZaHue"
 DIST="$ROOT/dist"
-APP="$DIST/ZaloThemeSwitcher.app"
+APP="$DIST/ZaHue.app"
 
 echo "==> Building Swift release binary"
 cd "$PKG"
 /usr/bin/swift build -c release
 
-BIN=$(/usr/bin/swift build -c release --show-bin-path)/ZaloThemeSwitcher
+BIN=$(/usr/bin/swift build -c release --show-bin-path)/ZaHue
 if [[ ! -x "$BIN" ]]; then
   echo "Binary not found: $BIN" >&2
   exit 1
@@ -18,6 +18,8 @@ fi
 
 echo "==> Assembling app bundle at $APP"
 rm -rf "$APP"
+# Clean old branding bundle if present
+rm -rf "$DIST/ZaloThemeSwitcher.app"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources/themes"
 
 cat > "$APP/Contents/Info.plist" <<'PLIST'
@@ -28,13 +30,15 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleExecutable</key>
-  <string>ZaloThemeSwitcher</string>
+  <string>ZaHue</string>
   <key>CFBundleIdentifier</key>
-  <string>com.local.ZaloThemeSwitcher</string>
+  <string>com.zahue.app</string>
   <key>CFBundleInfoDictionaryVersion</key>
   <string>6.0</string>
   <key>CFBundleName</key>
-  <string>Zalo Theme Switcher</string>
+  <string>ZaHue</string>
+  <key>CFBundleDisplayName</key>
+  <string>ZaHue</string>
   <key>CFBundlePackageType</key>
   <string>APPL</string>
   <key>CFBundleShortVersionString</key>
@@ -53,8 +57,8 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
 </plist>
 PLIST
 
-cp "$BIN" "$APP/Contents/MacOS/ZaloThemeSwitcher"
-chmod +x "$APP/Contents/MacOS/ZaloThemeSwitcher"
+cp "$BIN" "$APP/Contents/MacOS/ZaHue"
+chmod +x "$APP/Contents/MacOS/ZaHue"
 
 echo "==> Bundling app icon + theme catalog"
 cp "$ROOT/macos/assets/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
@@ -70,4 +74,4 @@ echo ""
 echo "Done: $APP"
 echo "Open with: open \"$APP\""
 echo "Fully native Swift installer — no Node.js runtime bundled."
-echo "If write permission fails, grant App Management to Zalo Theme Switcher."
+echo "If write permission fails, grant App Management to ZaHue."

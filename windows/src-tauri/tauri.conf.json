@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "Zalo Theme Switcher",
+  "productName": "ZaHue",
   "version": "0.1.0",
-  "identifier": "com.zalotheme.switcher",
+  "identifier": "com.zahue.app",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Zalo Theme Switcher",
+        "title": "ZaHue",
         "width": 980,
         "height": 720
       }

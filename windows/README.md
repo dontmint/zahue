@@ -1,4 +1,4 @@
-# Zalo Theme Switcher (Windows)
+# ZaHue (Windows)
 
 Tauri + React GUI that applies catalog themes to **Zalo PC on Windows**.
 
@@ -44,7 +44,7 @@ npm run tauri:build
 
 Artifacts land under:
 
-- `src-tauri/target/release/Zalo Theme Switcher.exe`
+- `src-tauri/target/release/ZaHue.exe`
 - `src-tauri/target/release/bundle/msi/` (and/or NSIS)
 
 > Building the `.exe` / `.msi` from macOS is not supported out of the box. Cross-compilation is possible but not set up here.

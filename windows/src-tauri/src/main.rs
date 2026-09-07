@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    zalo_theme_switcher_windows_lib::run()
+    zahue_windows_lib::run()
 }

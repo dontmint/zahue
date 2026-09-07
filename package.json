@@ -1,8 +1,8 @@
 {
-  "name": "zalo-theme-maple-dawn",
+  "name": "zahue",
   "version": "1.0.0",
   "private": true,
-  "description": "Minimal Zalo PC macOS theme: Maple Font + Ros\u00e9 Pine Dawn",
+  "description": "ZaHue — Zalo PC theme switcher (macOS + Windows)",
   "license": "MPL-2.0",
   "scripts": {
     "install-theme": "node install.js install",

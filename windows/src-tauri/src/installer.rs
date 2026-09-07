@@ -255,7 +255,7 @@ fn write_theme_assets(
         "fontWeight": weight,
         "fontSizePercent": size_percent,
         "installedAt": chrono::Utc::now().to_rfc3339(),
-        "tool": "zalo-theme-switcher",
+        "tool": "zahue",
         "source": "native-rust"
     });
     fs::write(
