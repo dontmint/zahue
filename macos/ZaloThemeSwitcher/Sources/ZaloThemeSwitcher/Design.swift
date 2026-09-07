@@ -12,12 +12,13 @@ enum AppDesign {
     static let danger = Color(hex: 0xF85552)
 
     static let corner: CGFloat = 16
-    static let rowHeight: CGFloat = 40
-    static let labelWidth: CGFloat = 112
-    static let pillHeight: CGFloat = 30
+    static let rowHeight: CGFloat = 44
+    static let labelWidth: CGFloat = 120
+    static let pillHeight: CGFloat = 34
     static let horizontalInset: CGFloat = 16
 
     static func mono(_ size: CGFloat = 13, weight: Font.Weight = .regular) -> Font {
+        let adjusted = size + 2
         let candidates = [
             "Maple Mono NF",
             "MapleMono-NF-Regular",
@@ -25,11 +26,11 @@ enum AppDesign {
             "MapleMono-Regular"
         ]
         for name in candidates {
-            if NSFont(name: name, size: size) != nil {
-                return .custom(name, size: size)
+            if NSFont(name: name, size: adjusted) != nil {
+                return .custom(name, size: adjusted)
             }
         }
-        return .system(size: size, weight: weight, design: .monospaced)
+        return .system(size: adjusted, weight: weight, design: .monospaced)
     }
 }
 
@@ -121,3 +122,42 @@ struct TrailingControls<Content: View>: View {
         .frame(maxWidth: .infinity, alignment: .trailing)
     }
 }
+
+struct AppLogoImage: View {
+    var size: CGFloat = 36
+
+    var body: some View {
+        Group {
+            if let image = Self.loadLogo() {
+                Image(nsImage: image)
+                    .resizable()
+                    .interpolation(.high)
+                    .frame(width: size, height: size)
+                    .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
+            } else {
+                RoundedRectangle(cornerRadius: size * 0.22, style: .continuous)
+                    .fill(Color.black)
+                    .frame(width: size, height: size)
+                    .overlay(
+                        Text("Z")
+                            .font(.system(size: size * 0.48, weight: .bold, design: .rounded))
+                            .foregroundStyle(.white)
+                    )
+            }
+        }
+    }
+
+    private static func loadLogo() -> NSImage? {
+        let candidates = [
+            Bundle.main.url(forResource: "AppLogo", withExtension: "png"),
+            Bundle.main.resourceURL?.appendingPathComponent("AppLogo.png")
+        ].compactMap { $0 }
+        for url in candidates {
+            if let image = NSImage(contentsOf: url) {
+                return image
+            }
+        }
+        return nil
+    }
+}
+

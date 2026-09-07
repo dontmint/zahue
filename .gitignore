@@ -10,3 +10,6 @@ zalo-maple-dawn-tmp/
 dist/
 macos/ZaloThemeSwitcher/.build/
 **/DerivedData/
+
+# Generated icon intermediates
+macos/assets/AppIcon.iconset/

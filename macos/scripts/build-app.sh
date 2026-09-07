@@ -48,12 +48,18 @@ cat > "$APP/Contents/Info.plist" <<'PLIST'
   <true/>
   <key>NSPrincipalClass</key>
   <string>NSApplication</string>
+  <key>CFBundleIconFile</key>
+  <string>AppIcon</string>
 </dict>
 </plist>
 PLIST
 
 cp "$BIN" "$APP/Contents/MacOS/ZaloThemeSwitcher"
 chmod +x "$APP/Contents/MacOS/ZaloThemeSwitcher"
+
+echo "==> Bundling app icon"
+cp "$ROOT/macos/assets/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
+cp "$ROOT/macos/assets/AppLogo.png" "$APP/Contents/Resources/AppLogo.png"
 
 echo "==> Bundling Node helper"
 cp "$ROOT/install.js" "$HELPER/"

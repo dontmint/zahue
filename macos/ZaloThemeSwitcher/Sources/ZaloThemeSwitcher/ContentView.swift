@@ -11,6 +11,8 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 14) {
             settingsPanel
 
+            tipBanner
+
             if state.showLogs {
                 logPanel
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -74,7 +76,7 @@ struct ContentView: View {
                         TextPill(text: state.selectedFontFamily)
                         TextPill(text: weightLabel)
                         Image(systemName: "chevron.down")
-                            .font(.system(size: 9, weight: .semibold))
+                            .font(.system(size: 13, weight: .semibold))
                             .foregroundStyle(AppDesign.muted)
                     }
                 }
@@ -112,12 +114,14 @@ struct ContentView: View {
 
     private var headerRow: some View {
         HStack(alignment: .center, spacing: 12) {
+            AppLogoImage(size: 40)
+
             VStack(alignment: .leading, spacing: 2) {
                 Text(selectedTheme?.name ?? "Select a theme")
                     .font(AppDesign.mono(14, weight: .semibold))
                     .foregroundStyle(AppDesign.foreground)
                     .lineLimit(1)
-                Text(selectedTheme.map { "\($0.family) · \($0.mode) · terminalcolors.com" } ?? "\(state.themes.count) themes available")
+                Text(selectedTheme.map { "\($0.family) · \($0.mode)" } ?? "\(state.themes.count) themes available")
                     .font(AppDesign.mono(11))
                     .foregroundStyle(AppDesign.muted)
                     .lineLimit(1)
@@ -147,11 +151,11 @@ struct ContentView: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "paintpalette")
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                     Text("Themes")
                         .font(AppDesign.mono(12, weight: .medium))
                     Image(systemName: "chevron.down")
-                        .font(.system(size: 9, weight: .semibold))
+                        .font(.system(size: 13, weight: .semibold))
                 }
                 .foregroundStyle(AppDesign.foreground)
                 .padding(.horizontal, 12)
@@ -218,6 +222,31 @@ struct ContentView: View {
         .padding(.horizontal, AppDesign.horizontalInset)
     }
 
+    private var tipBanner: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "sun.max.fill")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(AppDesign.accent)
+                .padding(.top, 1)
+            Text("Please use the default Light theme in the Zalo app for correct color rendering.")
+                .font(AppDesign.mono(12, weight: .medium))
+                .foregroundStyle(AppDesign.foreground)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(AppDesign.panelSoft)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(AppDesign.panelLine, lineWidth: 1)
+                )
+        )
+    }
+
     private var logPanel: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Installer log")
@@ -225,7 +254,9 @@ struct ContentView: View {
                 .foregroundStyle(AppDesign.muted)
 
             ScrollView {
-                Text(state.logText.isEmpty ? "Installer output will appear here…" : state.logText)
+                Text(state.logText.isEmpty
+                      ? "Please use the default Light theme in the Zalo app for correct color rendering.\n\nInstaller output will appear here…"
+                      : state.logText)
                     .font(AppDesign.mono(11))
                     .foregroundStyle(AppDesign.foreground)
                     .frame(maxWidth: .infinity, alignment: .leading)
