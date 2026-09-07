@@ -8,17 +8,18 @@ struct ContentView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        VStack(alignment: .leading, spacing: 14) {
             settingsPanel
-                .padding(18)
 
             if state.showLogs {
                 logPanel
-                    .padding(.horizontal, 18)
-                    .padding(.bottom, 18)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            } else {
+                Spacer(minLength: 0)
             }
         }
-        .frame(minWidth: 560, idealWidth: 620, minHeight: 420)
+        .padding(18)
+        .frame(minWidth: 640, idealWidth: 680, minHeight: 560, idealHeight: 620)
         .background(AppDesign.panel)
         .task { await state.refreshStatus() }
     }
@@ -28,29 +29,33 @@ struct ContentView: View {
             headerRow
             thinDivider
             SettingsRow(title: "Accent") {
-                HStack(spacing: 8) {
+                TrailingControls {
                     TextPill(text: "Custom")
                     ColorPill(hex: selectedTheme.accentHex, color: selectedTheme.accent)
                 }
             }
             thinDivider
             SettingsRow(title: "Background") {
-                ColorPill(hex: selectedTheme.backgroundHex, color: selectedTheme.background)
+                TrailingControls {
+                    ColorPill(hex: selectedTheme.backgroundHex, color: selectedTheme.background)
+                }
             }
             thinDivider
             SettingsRow(title: "Foreground") {
-                ColorPill(hex: selectedTheme.foregroundHex, color: selectedTheme.foreground)
+                TrailingControls {
+                    ColorPill(hex: selectedTheme.foregroundHex, color: selectedTheme.foreground)
+                }
             }
             thinDivider
             SettingsRow(title: "UI font") {
-                HStack(spacing: 8) {
+                TrailingControls {
                     TextPill(text: "Maple Mono NF")
                     TextPill(text: "SemiBold")
                 }
             }
             thinDivider
             SettingsRow(title: "Status") {
-                HStack(spacing: 8) {
+                TrailingControls {
                     TextPill(text: state.currentThemeName)
                     TextPill(text: state.status.hasBackup ? "Backup OK" : "No backup")
                 }
@@ -58,8 +63,6 @@ struct ContentView: View {
             thinDivider
             actionRow
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: AppDesign.corner, style: .continuous)
                 .fill(AppDesign.panel)
@@ -68,15 +71,15 @@ struct ContentView: View {
                         .strokeBorder(AppDesign.panelLine, lineWidth: 1)
                 )
         )
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var headerRow: some View {
-        HStack(spacing: 10) {
+        HStack(alignment: .center, spacing: 12) {
             Text(selectedTheme.mode)
                 .font(AppDesign.mono(14, weight: .semibold))
                 .foregroundStyle(AppDesign.foreground)
-
-            Spacer()
+                .frame(maxWidth: .infinity, alignment: .leading)
 
             Button("Refresh") {
                 Task { await state.refreshStatus() }
@@ -84,6 +87,7 @@ struct ContentView: View {
             .buttonStyle(.plain)
             .font(AppDesign.mono(12, weight: .medium))
             .foregroundStyle(AppDesign.muted)
+            .frame(height: AppDesign.pillHeight)
             .disabled(state.isBusy)
 
             Button("Restore") {
@@ -92,6 +96,7 @@ struct ContentView: View {
             .buttonStyle(.plain)
             .font(AppDesign.mono(12, weight: .medium))
             .foregroundStyle(AppDesign.muted)
+            .frame(height: AppDesign.pillHeight)
             .disabled(state.isBusy || !state.status.hasBackup)
 
             Menu {
@@ -106,36 +111,38 @@ struct ContentView: View {
                         .font(.system(size: 11, weight: .semibold))
                     Text(selectedTheme.name)
                         .font(AppDesign.mono(12, weight: .medium))
+                        .lineLimit(1)
                     Image(systemName: "chevron.down")
                         .font(.system(size: 9, weight: .semibold))
                 }
                 .foregroundStyle(AppDesign.foreground)
                 .padding(.horizontal, 12)
-                .padding(.vertical, 8)
+                .frame(height: AppDesign.pillHeight)
                 .background(PillBackground())
             }
             .menuStyle(.borderlessButton)
             .disabled(state.isBusy)
         }
-        .frame(minHeight: AppDesign.rowHeight)
-        .padding(.horizontal, 4)
+        .frame(height: AppDesign.rowHeight)
+        .padding(.horizontal, AppDesign.horizontalInset)
     }
 
     private var actionRow: some View {
-        HStack(spacing: 10) {
-            if let err = state.lastError {
-                Text(err)
-                    .font(AppDesign.mono(11))
-                    .foregroundStyle(AppDesign.danger)
-                    .lineLimit(2)
-            } else {
-                Text(state.status.zaloExists ? "Ready for \(state.zaloPath)" : "Zalo not found")
-                    .font(AppDesign.mono(11))
-                    .foregroundStyle(AppDesign.muted)
-                    .lineLimit(1)
+        HStack(alignment: .center, spacing: 10) {
+            Group {
+                if let err = state.lastError {
+                    Text(err)
+                        .font(AppDesign.mono(11))
+                        .foregroundStyle(AppDesign.danger)
+                        .lineLimit(2)
+                } else {
+                    Text(state.status.zaloExists ? "Ready for \(state.zaloPath)" : "Zalo not found")
+                        .font(AppDesign.mono(11))
+                        .foregroundStyle(AppDesign.muted)
+                        .lineLimit(1)
+                }
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             Button {
                 state.showLogs.toggle()
@@ -157,7 +164,7 @@ struct ContentView: View {
                 }
                 .foregroundStyle(.white)
                 .padding(.horizontal, 14)
-                .padding(.vertical, 8)
+                .frame(height: AppDesign.pillHeight)
                 .background(
                     Capsule(style: .continuous)
                         .fill(AppDesign.accent)
@@ -166,9 +173,8 @@ struct ContentView: View {
             .buttonStyle(.plain)
             .disabled(state.isBusy || !state.status.zaloExists)
         }
-        .frame(minHeight: AppDesign.rowHeight)
-        .padding(.horizontal, 4)
-        .padding(.top, 4)
+        .frame(height: AppDesign.rowHeight)
+        .padding(.horizontal, AppDesign.horizontalInset)
     }
 
     private var logPanel: some View {
@@ -185,7 +191,7 @@ struct ContentView: View {
                     .textSelection(.enabled)
             }
             .padding(12)
-            .frame(minHeight: 120, maxHeight: 160)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                     .fill(AppDesign.panelSoft)
@@ -195,12 +201,13 @@ struct ContentView: View {
                     )
             )
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }
 
     private var thinDivider: some View {
         Rectangle()
             .fill(AppDesign.panelLine.opacity(0.85))
             .frame(height: 1)
-            .padding(.horizontal, 4)
+            .padding(.horizontal, AppDesign.horizontalInset)
     }
 }

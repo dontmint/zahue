@@ -12,7 +12,7 @@ struct ZaloThemeSwitcherApp: App {
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
-        .defaultSize(width: 640, height: 460)
+        .defaultSize(width: 680, height: 620)
         .commands {
             CommandGroup(replacing: .newItem) {}
         }

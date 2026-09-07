@@ -11,8 +11,11 @@ enum AppDesign {
     static let muted = Color(hex: 0x829181)
     static let danger = Color(hex: 0xF85552)
 
-    static let corner: CGFloat = 18
-    static let rowHeight: CGFloat = 44
+    static let corner: CGFloat = 16
+    static let rowHeight: CGFloat = 40
+    static let labelWidth: CGFloat = 108
+    static let pillHeight: CGFloat = 30
+    static let horizontalInset: CGFloat = 16
 
     static func mono(_ size: CGFloat = 13, weight: Font.Weight = .regular) -> Font {
         let candidates = [
@@ -32,13 +35,14 @@ enum AppDesign {
 
 struct PillBackground: View {
     var fill: Color = AppDesign.panelSoft
+    var stroke: Color = AppDesign.panelLine
 
     var body: some View {
         Capsule(style: .continuous)
             .fill(fill)
             .overlay(
                 Capsule(style: .continuous)
-                    .strokeBorder(AppDesign.panelLine.opacity(0.9), lineWidth: 1)
+                    .strokeBorder(stroke.opacity(0.95), lineWidth: 1)
             )
     }
 }
@@ -48,15 +52,19 @@ struct SettingsRow<Trailing: View>: View {
     @ViewBuilder var trailing: () -> Trailing
 
     var body: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .center, spacing: 12) {
             Text(title)
                 .font(AppDesign.mono(13, weight: .medium))
                 .foregroundStyle(AppDesign.foreground)
+                .frame(width: AppDesign.labelWidth, alignment: .leading)
+
             Spacer(minLength: 8)
+
             trailing()
+                .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        .frame(minHeight: AppDesign.rowHeight)
-        .padding(.horizontal, 4)
+        .frame(height: AppDesign.rowHeight)
+        .padding(.horizontal, AppDesign.horizontalInset)
     }
 }
 
@@ -69,13 +77,14 @@ struct ColorPill: View {
             Text(hex.uppercased())
                 .font(AppDesign.mono(12, weight: .medium))
                 .foregroundStyle(AppDesign.foreground)
+                .monospacedDigit()
             Circle()
                 .fill(color)
-                .frame(width: 14, height: 14)
+                .frame(width: 12, height: 12)
                 .overlay(Circle().strokeBorder(AppDesign.panelLine, lineWidth: 1))
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .frame(height: AppDesign.pillHeight)
         .background(PillBackground())
     }
 }
@@ -88,8 +97,9 @@ struct TextPill: View {
         Text(text)
             .font(AppDesign.mono(12, weight: emphasized ? .semibold : .medium))
             .foregroundStyle(emphasized ? Color.white : AppDesign.foreground)
+            .lineLimit(1)
             .padding(.horizontal, 12)
-            .padding(.vertical, 8)
+            .frame(height: AppDesign.pillHeight)
             .background(
                 Capsule(style: .continuous)
                     .fill(emphasized ? AppDesign.accent : AppDesign.panelSoft)
@@ -98,5 +108,16 @@ struct TextPill: View {
                             .strokeBorder(emphasized ? AppDesign.accent : AppDesign.panelLine, lineWidth: 1)
                     )
             )
+    }
+}
+
+struct TrailingControls<Content: View>: View {
+    @ViewBuilder var content: () -> Content
+
+    var body: some View {
+        HStack(spacing: 8) {
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .trailing)
     }
 }
