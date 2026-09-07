@@ -107,22 +107,32 @@ async function install (zaloAppPath) {
   const appAsarBakPath = path.join(resources, 'app.asar.bak')
   const extractPath = path.join(TMP, 'app')
 
-  if (!isFile(appAsarPath) && !isFile(appAsarBakPath)) {
+  if (!isFile(appAsarPath) && !isDir(appAsarPath) && !isFile(appAsarBakPath)) {
     die(`Neither app.asar nor app.asar.bak found in ${resources}`)
   }
 
   quitZalo()
 
   if (isDir(TMP)) fs.rmSync(TMP, { recursive: true, force: true })
-  if (isDir(appAsarPath)) fs.rmSync(appAsarPath, { recursive: true, force: true })
 
-  // Always start from pristine backup when available
-  if (isFile(appAsarPath) && isFile(appAsarBakPath)) {
-    fs.rmSync(appAsarPath, { force: true })
+  // Previous theme installs leave app.asar as an unpacked directory.
+  // Remove it first, then always restore the pristine ASAR from backup.
+  if (isDir(appAsarPath)) {
+    info(`Removing previous unpacked install: ${appAsarPath}`)
+    fs.rmSync(appAsarPath, { recursive: true, force: true })
+  }
+
+  if (isFile(appAsarBakPath)) {
+    if (isFile(appAsarPath)) {
+      fs.rmSync(appAsarPath, { force: true })
+    }
+    info('Restoring original app.asar from app.asar.bak')
     fs.renameSync(appAsarBakPath, appAsarPath)
   }
 
-  if (!isFile(appAsarPath)) die(`app.asar missing at ${appAsarPath}`)
+  if (!isFile(appAsarPath)) {
+    die(`app.asar missing at ${appAsarPath}. If you still have app.asar.bak, re-run after updating this installer.`)
+  }
 
   fs.mkdirSync(TMP, { recursive: true })
   info(`Extracting ${appAsarPath}`)
