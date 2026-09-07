@@ -8,7 +8,7 @@ zalo-maple-dawn-tmp/
 
 # Swift / app build
 dist/
-macos/ZaloThemeSwitcher/.build/
+macos/**/.build/
 **/DerivedData/
 
 # Generated icon intermediates
