@@ -2,15 +2,6 @@ import AppKit
 import SwiftUI
 
 enum AppDesign {
-    // Everforest-inspired chrome for the switcher UI itself
-    static let panel = Color(hex: 0xFDF6E3)
-    static let panelSoft = Color(hex: 0xF4EFDA)
-    static let panelLine = Color(hex: 0xE6E1CC)
-    static let accent = Color(hex: 0x93B259)
-    static let foreground = Color(hex: 0x5C6A72)
-    static let muted = Color(hex: 0x829181)
-    static let danger = Color(hex: 0xF85552)
-
     static let corner: CGFloat = 16
     static let rowHeight: CGFloat = 44
     static let labelWidth: CGFloat = 120
@@ -35,20 +26,21 @@ enum AppDesign {
 }
 
 struct PillBackground: View {
-    var fill: Color = AppDesign.panelSoft
-    var stroke: Color = AppDesign.panelLine
+    @Environment(\.themePalette) private var palette
+    var emphasized: Bool = false
 
     var body: some View {
         Capsule(style: .continuous)
-            .fill(fill)
+            .fill(emphasized ? palette.accent : palette.panelSoft)
             .overlay(
                 Capsule(style: .continuous)
-                    .strokeBorder(stroke.opacity(0.95), lineWidth: 1)
+                    .strokeBorder((emphasized ? palette.accent : palette.panelLine).opacity(0.95), lineWidth: 1)
             )
     }
 }
 
 struct SettingsRow<Trailing: View>: View {
+    @Environment(\.themePalette) private var palette
     let title: String
     @ViewBuilder var trailing: () -> Trailing
 
@@ -56,7 +48,7 @@ struct SettingsRow<Trailing: View>: View {
         HStack(alignment: .center, spacing: 12) {
             Text(title)
                 .font(AppDesign.mono(13, weight: .medium))
-                .foregroundStyle(AppDesign.foreground)
+                .foregroundStyle(palette.foreground)
                 .frame(width: AppDesign.labelWidth, alignment: .leading)
 
             Spacer(minLength: 8)
@@ -70,6 +62,7 @@ struct SettingsRow<Trailing: View>: View {
 }
 
 struct ColorPill: View {
+    @Environment(\.themePalette) private var palette
     let hex: String
     let color: Color
 
@@ -77,12 +70,12 @@ struct ColorPill: View {
         HStack(spacing: 8) {
             Text(hex.uppercased())
                 .font(AppDesign.mono(12, weight: .medium))
-                .foregroundStyle(AppDesign.foreground)
+                .foregroundStyle(palette.foreground)
                 .monospacedDigit()
             Circle()
                 .fill(color)
                 .frame(width: 12, height: 12)
-                .overlay(Circle().strokeBorder(AppDesign.panelLine, lineWidth: 1))
+                .overlay(Circle().strokeBorder(palette.panelLine, lineWidth: 1))
         }
         .padding(.horizontal, 12)
         .frame(height: AppDesign.pillHeight)
@@ -91,24 +84,18 @@ struct ColorPill: View {
 }
 
 struct TextPill: View {
+    @Environment(\.themePalette) private var palette
     let text: String
     var emphasized: Bool = false
 
     var body: some View {
         Text(text)
             .font(AppDesign.mono(12, weight: emphasized ? .semibold : .medium))
-            .foregroundStyle(emphasized ? Color.white : AppDesign.foreground)
+            .foregroundStyle(emphasized ? Color.white : palette.foreground)
             .lineLimit(1)
             .padding(.horizontal, 12)
             .frame(height: AppDesign.pillHeight)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(emphasized ? AppDesign.accent : AppDesign.panelSoft)
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .strokeBorder(emphasized ? AppDesign.accent : AppDesign.panelLine, lineWidth: 1)
-                    )
-            )
+            .background(PillBackground(emphasized: emphasized))
     }
 }
 
@@ -160,4 +147,3 @@ struct AppLogoImage: View {
         return nil
     }
 }
-

@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import SwiftUI
 
@@ -10,14 +11,17 @@ enum ThemeModeFilter: String, CaseIterable, Identifiable {
 
 @MainActor
 final class AppState: ObservableObject {
+    static let systemThemeID = "__system__"
+
     @Published var themes: [ThemeDefinition] = []
-    @Published var selectedThemeID: String = "everforest-light"
+    /// `__system__` means follow macOS appearance and do not apply a catalog theme yet.
+    @Published var selectedThemeID: String = AppState.systemThemeID
     @Published var themeFilter: ThemeModeFilter = .all
     @Published var themeQuery: String = ""
 
     @Published var fontFamilies: [SystemFontFamily] = []
-    @Published var selectedFontFamily: String = "Maple Mono"
-    @Published var selectedFontWeight: Int = 600
+    @Published var selectedFontFamily: String = "SF Pro Text"
+    @Published var selectedFontWeight: Int = 400
     @Published var fontQuery: String = ""
 
     @Published var zaloPath: String = "/Applications/Zalo.app"
@@ -28,9 +32,15 @@ final class AppState: ObservableObject {
     @Published var showLogs: Bool = false
     @Published var showThemePicker: Bool = false
     @Published var showFontPicker: Bool = false
+    @Published var palette: ThemePalette = .system()
 
     var selectedTheme: ThemeDefinition? {
-        themes.first { $0.id == selectedThemeID }
+        guard selectedThemeID != Self.systemThemeID else { return nil }
+        return themes.first { $0.id == selectedThemeID }
+    }
+
+    var isSystemThemeSelected: Bool {
+        selectedThemeID == Self.systemThemeID
     }
 
     var filteredThemes: [ThemeDefinition] {
@@ -70,28 +80,57 @@ final class AppState: ObservableObject {
         return status.themed ? (status.themeId ?? "Custom") : "Original Zalo"
     }
 
+    var headerTitle: String {
+        if isSystemThemeSelected { return "System Default" }
+        return selectedTheme?.name ?? "Select a theme"
+    }
+
+    var headerSubtitle: String {
+        if isSystemThemeSelected {
+            return "Follows macOS Light / Dark · pick a theme to preview"
+        }
+        if let theme = selectedTheme {
+            return "\(theme.family) · \(theme.mode) · live preview"
+        }
+        return "\(themes.count) themes available"
+    }
+
     func bootstrap() {
         themes = ThemeCatalog.load()
         fontFamilies = FontCatalog.loadFamilies()
 
-        if let maple = fontFamilies.first(where: {
-            $0.name.localizedCaseInsensitiveContains("Maple Mono")
-        }) {
+        if let maple = fontFamilies.first(where: { $0.name.localizedCaseInsensitiveContains("Maple Mono") }) {
             selectedFontFamily = maple.name
-            if let semi = maple.weights.first(where: { $0.weight == 600 }) {
-                selectedFontWeight = semi.weight
-            } else {
-                selectedFontWeight = maple.weights.last?.weight ?? 400
-            }
+            selectedFontWeight = maple.weights.first(where: { $0.weight == 600 })?.weight
+                ?? maple.weights.last?.weight
+                ?? 400
+        } else if let sf = fontFamilies.first(where: { $0.name == "SF Pro Text" || $0.name == ".AppleSystemUIFont" || $0.name == "System Font" }) {
+            selectedFontFamily = sf.name
+            selectedFontWeight = sf.weights.first(where: { $0.weight == 400 })?.weight ?? 400
         } else if let first = fontFamilies.first {
             selectedFontFamily = first.name
             selectedFontWeight = first.weights.first(where: { $0.weight == 400 })?.weight ?? first.weights.first?.weight ?? 400
         }
 
-        if themes.contains(where: { $0.id == "everforest-light" }) {
-            selectedThemeID = "everforest-light"
-        } else if let first = themes.first {
-            selectedThemeID = first.id
+        selectedThemeID = Self.systemThemeID
+        refreshPalette()
+    }
+
+    func selectSystemTheme() {
+        selectedThemeID = Self.systemThemeID
+        refreshPalette()
+    }
+
+    func selectTheme(id: String) {
+        selectedThemeID = id
+        refreshPalette()
+    }
+
+    func refreshPalette() {
+        if let theme = selectedTheme {
+            palette = .preview(from: theme)
+        } else {
+            palette = .system()
         }
     }
 
@@ -104,8 +143,6 @@ final class AppState: ObservableObject {
 
     func appendLog(_ chunk: String) {
         logText += chunk
-        // Keep the log bounded, but always cut on a newline so the visible
-        // top never starts mid-token (e.g. "ight", from a truncated JSON dump).
         if logText.count > 40_000 {
             let trimmed = String(logText.suffix(32_000))
             if let newline = trimmed.firstIndex(of: "\n") {
@@ -132,9 +169,7 @@ final class AppState: ObservableObject {
             if logOutput {
                 appendLog("[status] theme=\(status.themeName ?? status.themeId ?? "none") · font=\(status.fontFamily ?? "-") · backup=\(status.hasBackup ? "yes" : "no")\n")
             }
-            if let current = status.themeId, themes.contains(where: { $0.id == current }) {
-                selectedThemeID = current
-            }
+            // Do not auto-select installed theme into preview; keep user's picker choice.
             if let font = status.fontFamily, fontFamilies.contains(where: { $0.name == font }) {
                 selectedFontFamily = font
             }
@@ -142,6 +177,7 @@ final class AppState: ObservableObject {
                 selectedFontWeight = weight
                 syncWeightForSelectedFont()
             }
+            refreshPalette()
         } catch {
             lastError = error.localizedDescription
             appendLog("\n[error] \(error.localizedDescription)\n")
@@ -157,7 +193,7 @@ final class AppState: ObservableObject {
         showLogs = true
         do {
             try await InstallerService.shared.apply(
-                themeId: theme.id,
+                theme: theme,
                 zaloPath: zaloPath,
                 fontFamily: selectedFontFamily,
                 fontWeight: selectedFontWeight

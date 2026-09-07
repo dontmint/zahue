@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 
 @main
@@ -8,8 +9,18 @@ struct ZaloThemeSwitcherApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
-                .preferredColorScheme(.light)
+                .environment(\.themePalette, appState.palette)
+                .preferredColorScheme(appState.palette.preferredScheme)
                 .onAppear { appState.bootstrap() }
+                .onReceive(
+                    DistributedNotificationCenter.default.publisher(
+                        for: Notification.Name("AppleInterfaceThemeChangedNotification")
+                    )
+                ) { _ in
+                    if appState.isSystemThemeSelected {
+                        appState.refreshPalette()
+                    }
+                }
         }
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)

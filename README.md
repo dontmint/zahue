@@ -99,23 +99,18 @@ install.js         # ASAR extract → inject → replace
 
 ## macOS Theme Switcher (SwiftUI)
 
-Build a native app with a **bundled Node runtime** so regular users do **not** need Node.js installed:
+Fully **native Swift** installer (no Node.js in the app):
 
 ```bash
 ./macos/scripts/build-app.sh
 open dist/ZaloThemeSwitcher.app
 ```
 
-The build downloads a portable Node binary into `macos/runtime/` (gitignored) and embeds it at:
+- Default UI follows **System Default** (macOS Light/Dark)
+- Selecting a catalog theme live-previews that palette in the switcher
+- Apply/Restore uses Swift ASAR extract + HTML/CSS injection
+- App size ~3MB (no embedded Node runtime)
 
-`ZaloThemeSwitcher.app/Contents/Resources/helper/runtime/bin/node`
+Optional developer CLI (Node) still available in `install.js`, but the `.app` does not use it.
 
-End users only need the `.app` (plus App Management permission to write under `/Applications/Zalo.app`).
-
-### CLI (developers)
-
-```bash
-node install.js list --mode dark
-node install.js install everforest-light --font "SF Pro Text" --weight 500
-node install.js uninstall
-```
+See [macos/README.md](./macos/README.md).

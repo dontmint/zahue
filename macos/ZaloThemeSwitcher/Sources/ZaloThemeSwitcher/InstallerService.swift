@@ -1,234 +1,216 @@
 import Foundation
 
 enum InstallerError: LocalizedError {
-    case runtimeNotFound
-    case helperNotFound(String)
     case failed(String)
 
     var errorDescription: String? {
         switch self {
-        case .runtimeNotFound:
-            return "Bundled installer runtime is missing. Rebuild Zalo Theme Switcher.app (no system Node.js required)."
-        case .helperNotFound(let path):
-            return "Installer helper not found at \(path)"
-        case .failed(let message):
-            return message
+        case .failed(let message): return message
         }
     }
 }
 
+/// Fully native Zalo theme installer (no Node.js).
 final class InstallerService {
     static let shared = InstallerService()
 
+    private let defaultZalo = "/Applications/Zalo.app"
+    private let fm = FileManager.default
+
     private init() {}
 
-    /// Prefer the Node binary shipped inside the .app so regular users
-    /// do not need Homebrew/Node installed. System Node remains a fallback
-    /// for local development outside the app bundle.
-    func resolveNodeBinary(helper: URL? = nil) -> String? {
-        if let env = ProcessInfo.processInfo.environment["NODE_BINARY"],
-           FileManager.default.isExecutableFile(atPath: env) {
-            return env
+    private var tmpRoot: URL {
+        URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("zalo-theme-tmp", isDirectory: true)
+    }
+
+    func status(zaloPath: String, onOutput: @escaping (String) -> Void) async throws -> InstallerStatus {
+        onOutput("[native] status \(zaloPath)\n")
+        var status = InstallerStatus(zaloPath: zaloPath)
+        status.zaloExists = isDir(zaloPath)
+        status.themeCount = ThemeCatalog.load().count
+
+        guard status.zaloExists else { return status }
+        let resources = resourcesDir(zaloPath)
+        let appAsar = resources.appendingPathComponent("app.asar")
+        let bak = resources.appendingPathComponent("app.asar.bak")
+        status.appAsarIsDirectory = isDir(appAsar.path)
+        status.hasBackup = isFile(bak.path)
+
+        if let state = readInstalledState(appAsarPath: appAsar) {
+            status.themeId = state.themeId
+            status.themeName = state.themeName
+            status.fontFamily = state.fontFamily
+            status.fontWeight = state.fontWeight
+            status.themed = true
+        }
+        return status
+    }
+
+    func apply(
+        theme: ThemeDefinition,
+        zaloPath: String,
+        fontFamily: String,
+        fontWeight: Int,
+        onOutput: @escaping (String) -> Void
+    ) async throws {
+        let resources = resourcesDir(zaloPath)
+        let appAsar = resources.appendingPathComponent("app.asar")
+        let bak = resources.appendingPathComponent("app.asar.bak")
+        let extract = tmpRoot.appendingPathComponent("app", isDirectory: true)
+
+        guard isFile(appAsar.path) || isDir(appAsar.path) || isFile(bak.path) else {
+            throw InstallerError.failed("Neither app.asar nor app.asar.bak found in \(resources.path)")
         }
 
-        let helperDir: URL?
-        if let helper {
-            helperDir = helper
-        } else {
-            helperDir = try? resolveHelperDirectory()
+        quitZalo(onOutput: onOutput)
+
+        // Fast path: already unpacked + themed (or backup exists)
+        if isDir(appAsar.path), readInstalledState(appAsarPath: appAsar) != nil || isFile(bak.path) {
+            onOutput("[info] Updating theme assets in existing unpacked app.asar\n")
+            try writeThemeAssets(appRoot: appAsar, theme: theme, fontFamily: fontFamily, fontWeight: fontWeight, onOutput: onOutput)
+            try ThemeCSSBuilder.patchIndexHTML(at: appAsar, themeId: theme.id)
+            onOutput("[info] Patched \(appAsar.appendingPathComponent("pc-dist/index.html").path)\n")
+            onOutput("{\"ok\":true,\"action\":\"switch\",\"themeId\":\"\(theme.id)\"}\n")
+            onOutput("\nDone. Applied \(theme.name). Open Zalo PC.\n")
+            return
         }
 
-        if let helperDir {
-            let bundledCandidates = [
-                helperDir.appendingPathComponent("runtime/bin/node").path,
-                helperDir.appendingPathComponent("runtime/node").path
-            ]
-            if let hit = bundledCandidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) {
-                return hit
-            }
+        // Fresh extract path
+        if isDir(tmpRoot.path) {
+            try? fm.removeItem(at: tmpRoot)
+        }
+        if isDir(appAsar.path) {
+            onOutput("[info] Removing previous unpacked install: \(appAsar.path)\n")
+            try fm.removeItem(at: appAsar)
+        }
+        if isFile(bak.path) {
+            if isFile(appAsar.path) { try fm.removeItem(at: appAsar) }
+            onOutput("[info] Restoring original app.asar from app.asar.bak\n")
+            try fm.moveItem(at: bak, to: appAsar)
+        }
+        guard isFile(appAsar.path) else {
+            throw InstallerError.failed("app.asar missing at \(appAsar.path)")
         }
 
-        // Dev fallback only
-        let systemCandidates = [
-            "/opt/homebrew/bin/node",
-            "/usr/local/bin/node",
-            "/usr/bin/node"
+        try fm.createDirectory(at: tmpRoot, withIntermediateDirectories: true)
+        onOutput("[info] Extracting \(appAsar.path)\n")
+        try AsarExtractor.extractAll(archiveURL: appAsar, to: extract)
+        try writeThemeAssets(appRoot: extract, theme: theme, fontFamily: fontFamily, fontWeight: fontWeight, onOutput: onOutput)
+        try ThemeCSSBuilder.patchIndexHTML(at: extract, themeId: theme.id)
+        onOutput("[info] Patched \(extract.appendingPathComponent("pc-dist/index.html").path)\n")
+
+        if !isFile(bak.path) {
+            try fm.moveItem(at: appAsar, to: bak)
+            onOutput("[info] Backup created: \(bak.path)\n")
+        } else if isFile(appAsar.path) {
+            try fm.removeItem(at: appAsar)
+        }
+
+        try fm.moveItem(at: extract, to: appAsar)
+        try? fm.removeItem(at: tmpRoot)
+        onOutput("{\"ok\":true,\"action\":\"install\",\"themeId\":\"\(theme.id)\"}\n")
+        onOutput("\nDone. Applied \(theme.name). Open Zalo PC.\n")
+        if theme.isLight {
+            onOutput("Tip: set Zalo appearance to Light for light themes.\n")
+        }
+    }
+
+    func restore(zaloPath: String, onOutput: @escaping (String) -> Void) async throws {
+        let resources = resourcesDir(zaloPath)
+        let appAsar = resources.appendingPathComponent("app.asar")
+        let bak = resources.appendingPathComponent("app.asar.bak")
+        guard isFile(bak.path) else {
+            throw InstallerError.failed("No app.asar.bak found. Reinstall Zalo PC to restore.")
+        }
+        quitZalo(onOutput: onOutput)
+        if fm.fileExists(atPath: appAsar.path) {
+            try fm.removeItem(at: appAsar)
+        }
+        try fm.moveItem(at: bak, to: appAsar)
+        onOutput("{\"ok\":true,\"action\":\"uninstall\",\"themeId\":null}\n")
+        onOutput("\nRestored original app.asar. Open Zalo PC.\n")
+    }
+
+    // MARK: - Helpers
+
+    private struct InstalledState: Codable {
+        var themeId: String?
+        var themeName: String?
+        var mode: String?
+        var fontFamily: String?
+        var fontWeight: Int?
+    }
+
+    private func writeThemeAssets(
+        appRoot: URL,
+        theme: ThemeDefinition,
+        fontFamily: String,
+        fontWeight: Int,
+        onOutput: @escaping (String) -> Void
+    ) throws {
+        let dest = appRoot.appendingPathComponent("pc-dist/\(ThemeCSSBuilder.assetDirName)", isDirectory: true)
+        try fm.createDirectory(at: dest, withIntermediateDirectories: true)
+        let css = ThemeCSSBuilder.css(theme: theme, fontFamily: fontFamily, fontWeight: fontWeight)
+        let js = ThemeCSSBuilder.js(themeId: theme.id)
+        try css.write(to: dest.appendingPathComponent("theme.css"), atomically: true, encoding: .utf8)
+        try js.write(to: dest.appendingPathComponent("theme.js"), atomically: true, encoding: .utf8)
+
+        let state: [String: Any] = [
+            "themeId": theme.id,
+            "themeName": theme.name,
+            "mode": theme.mode,
+            "fontFamily": fontFamily.isEmpty ? "Maple Mono" : fontFamily,
+            "fontWeight": fontWeight == 0 ? 600 : fontWeight,
+            "installedAt": ISO8601DateFormatter().string(from: Date()),
+            "tool": "zalo-theme-switcher",
+            "source": "native-swift"
         ]
-        if let hit = systemCandidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) {
-            return hit
-        }
+        let data = try JSONSerialization.data(withJSONObject: state, options: [.prettyPrinted, .sortedKeys])
+        try data.write(to: dest.appendingPathComponent(ThemeCSSBuilder.stateFile))
 
-        let which = Process()
-        which.executableURL = URL(fileURLWithPath: "/usr/bin/which")
-        which.arguments = ["node"]
-        let pipe = Pipe()
-        which.standardOutput = pipe
-        which.standardError = Pipe()
-        try? which.run()
-        which.waitUntilExit()
-        let data = pipe.fileHandleForReading.readDataToEndOfFile()
-        let path = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let path, FileManager.default.isExecutableFile(atPath: path) {
-            return path
+        let legacy = appRoot.appendingPathComponent("pc-dist/zalo-maple-dawn")
+        if isDir(legacy.path) {
+            try? fm.removeItem(at: legacy)
+        }
+        onOutput("[info] Copied theme assets → \(dest.path) (\(theme.id), font=\(fontFamily) \(fontWeight))\n")
+    }
+
+    private func readInstalledState(appAsarPath: URL) -> InstalledState? {
+        guard isDir(appAsarPath.path) else { return nil }
+        let stateURL = appAsarPath.appendingPathComponent("pc-dist/\(ThemeCSSBuilder.assetDirName)/\(ThemeCSSBuilder.stateFile)")
+        if isFile(stateURL.path),
+           let data = try? Data(contentsOf: stateURL),
+           let state = try? JSONDecoder().decode(InstalledState.self, from: data) {
+            return state
+        }
+        if isDir(appAsarPath.appendingPathComponent("pc-dist/zalo-maple-dawn").path) {
+            return InstalledState(themeId: "rose-pine-dawn", themeName: "Rosé Pine Dawn", mode: "light", fontFamily: "Maple Mono", fontWeight: 600)
         }
         return nil
     }
 
-    func resolveHelperDirectory() throws -> URL {
-        if let env = ProcessInfo.processInfo.environment["ZALO_THEME_HELPER"] {
-            let url = URL(fileURLWithPath: env)
-            if FileManager.default.fileExists(atPath: url.appendingPathComponent("install.js").path) {
-                return url
-            }
-        }
-
-        if let resource = Bundle.main.resourceURL?.appendingPathComponent("helper"),
-           FileManager.default.fileExists(atPath: resource.appendingPathComponent("install.js").path) {
-            return resource
-        }
-
-        let executable = URL(fileURLWithPath: CommandLine.arguments[0]).resolvingSymlinksInPath()
-        var dir = executable.deletingLastPathComponent()
-        for _ in 0..<10 {
-            let install = dir.appendingPathComponent("install.js")
-            if FileManager.default.fileExists(atPath: install.path) {
-                return dir
-            }
-            let parent = dir.deletingLastPathComponent()
-            if FileManager.default.fileExists(atPath: parent.appendingPathComponent("install.js").path) {
-                return parent
-            }
-            dir = parent
-        }
-
-        let homeCandidate = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Projects/zalo-theme-maple-dawn")
-        if FileManager.default.fileExists(atPath: homeCandidate.appendingPathComponent("install.js").path) {
-            return homeCandidate
-        }
-
-        throw InstallerError.helperNotFound("Bundle Resources/helper or repo root")
+    private func resourcesDir(_ zaloPath: String) -> URL {
+        URL(fileURLWithPath: zaloPath).appendingPathComponent("Contents/Resources")
     }
 
-    @discardableResult
-    func run(arguments: [String], onOutput: @escaping (String) -> Void) async throws -> String {
-        let helper = try resolveHelperDirectory()
-        guard let node = resolveNodeBinary(helper: helper) else {
-            throw InstallerError.runtimeNotFound
-        }
-        let installJS = helper.appendingPathComponent("install.js")
-        let usingBundled = node.contains("/Contents/Resources/helper/runtime/") || node.contains("/helper/runtime/")
-
-        return try await withCheckedThrowingContinuation { continuation in
-            let process = Process()
-            process.executableURL = URL(fileURLWithPath: node)
-            process.arguments = [installJS.path] + arguments
-            process.currentDirectoryURL = helper
-
-            var env = ProcessInfo.processInfo.environment
-            // Keep the helper self-contained; don't depend on user PATH quirks.
-            env["PATH"] = "\(URL(fileURLWithPath: node).deletingLastPathComponent().path):/usr/bin:/bin:/usr/sbin:/sbin"
-            process.environment = env
-
-            let out = Pipe()
-            let err = Pipe()
-            process.standardOutput = out
-            process.standardError = err
-
-            final class OutputBox: @unchecked Sendable {
-                private let lock = NSLock()
-                private var value = ""
-                func append(_ text: String) {
-                    lock.lock(); value += text; lock.unlock()
-                }
-                func snapshot() -> String {
-                    lock.lock(); defer { lock.unlock() }
-                    return value
-                }
-            }
-            let box = OutputBox()
-
-            let append: @Sendable (Data) -> Void = { data in
-                guard let text = String(data: data, encoding: .utf8), !text.isEmpty else { return }
-                box.append(text)
-                DispatchQueue.main.async { onOutput(text) }
-            }
-
-            out.fileHandleForReading.readabilityHandler = { handle in
-                append(handle.availableData)
-            }
-            err.fileHandleForReading.readabilityHandler = { handle in
-                append(handle.availableData)
-            }
-
-            process.terminationHandler = { proc in
-                out.fileHandleForReading.readabilityHandler = nil
-                err.fileHandleForReading.readabilityHandler = nil
-                append(out.fileHandleForReading.readDataToEndOfFile())
-                append(err.fileHandleForReading.readDataToEndOfFile())
-                let combined = box.snapshot()
-
-                if proc.terminationStatus == 0 {
-                    continuation.resume(returning: combined)
-                } else {
-                    let message = combined.trimmingCharacters(in: .whitespacesAndNewlines)
-                    continuation.resume(throwing: InstallerError.failed(message.isEmpty ? "Installer exited with code \(proc.terminationStatus)" : message))
-                }
-            }
-
-            do {
-                DispatchQueue.main.async {
-                    let label = usingBundled ? "bundled-node" : "node"
-                    onOutput("$ \(label) install.js \(arguments.joined(separator: " "))\n")
-                }
-                try process.run()
-            } catch {
-                continuation.resume(throwing: error)
-            }
-        }
+    private func quitZalo(onOutput: @escaping (String) -> Void) {
+        onOutput("[info] Quitting Zalo if running...\n")
+        let proc = Process()
+        proc.executableURL = URL(fileURLWithPath: "/usr/bin/killall")
+        proc.arguments = ["Zalo"]
+        proc.standardOutput = Pipe()
+        proc.standardError = Pipe()
+        try? proc.run()
+        proc.waitUntilExit()
     }
 
-    func status(zaloPath: String, onOutput: @escaping (String) -> Void) async throws -> InstallerStatus {
-        let output = try await run(arguments: ["status", zaloPath], onOutput: onOutput)
-        return parseStatus(from: output, fallbackPath: zaloPath)
+    private func isFile(_ path: String) -> Bool {
+        var isDir: ObjCBool = false
+        return fm.fileExists(atPath: path, isDirectory: &isDir) && !isDir.boolValue
     }
 
-    func apply(themeId: String, zaloPath: String, fontFamily: String, fontWeight: Int, onOutput: @escaping (String) -> Void) async throws {
-        _ = try await run(
-            arguments: [
-                "install", themeId, zaloPath,
-                "--font", fontFamily,
-                "--weight", String(fontWeight)
-            ],
-            onOutput: onOutput
-        )
-    }
-
-    func restore(zaloPath: String, onOutput: @escaping (String) -> Void) async throws {
-        _ = try await run(arguments: ["uninstall", zaloPath], onOutput: onOutput)
-    }
-
-    private func parseStatus(from output: String, fallbackPath: String) -> InstallerStatus {
-        var status = InstallerStatus(zaloPath: fallbackPath)
-        guard let data = extractJSONObject(from: output)?.data(using: .utf8),
-              let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            return status
-        }
-        status.zaloPath = obj["zaloPath"] as? String ?? fallbackPath
-        status.zaloExists = obj["zaloExists"] as? Bool ?? false
-        status.hasBackup = obj["hasBackup"] as? Bool ?? false
-        status.themeId = obj["themeId"] as? String
-        status.themeName = obj["themeName"] as? String
-        status.fontFamily = obj["fontFamily"] as? String
-        status.fontWeight = obj["fontWeight"] as? Int
-        status.themed = obj["themed"] as? Bool ?? (status.themeId != nil)
-        status.appAsarIsDirectory = obj["appAsarIsDirectory"] as? Bool ?? false
-        status.themeCount = obj["themeCount"] as? Int ?? 0
-        return status
-    }
-
-    private func extractJSONObject(from text: String) -> String? {
-        guard let start = text.firstIndex(of: "{"),
-              let end = text.lastIndex(of: "}") else { return nil }
-        return String(text[start...end])
+    private func isDir(_ path: String) -> Bool {
+        var isDir: ObjCBool = false
+        return fm.fileExists(atPath: path, isDirectory: &isDir) && isDir.boolValue
     }
 }

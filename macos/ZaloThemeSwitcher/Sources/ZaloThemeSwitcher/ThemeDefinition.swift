@@ -11,12 +11,24 @@ struct ThemeDefinition: Identifiable, Hashable, Codable {
     let background: String
     let foreground: String
 
-    // optional ANSI fields from catalog
     let red: String?
     let yellow: String?
     let blue: String?
     let cyan: String?
     let magenta: String?
+    let green: String?
+    let black: String?
+    let white: String?
+    let brightBlack: String?
+    let brightRed: String?
+    let brightGreen: String?
+    let brightYellow: String?
+    let brightBlue: String?
+    let brightMagenta: String?
+    let brightCyan: String?
+    let brightWhite: String?
+    let selectionBg: String?
+    let selectionFg: String?
 
     var accentHex: String { accent }
     var backgroundHex: String { background }
@@ -30,7 +42,17 @@ struct ThemeDefinition: Identifiable, Hashable, Codable {
 
     enum CodingKeys: String, CodingKey {
         case id, name, family, variant, mode, accent, background, foreground
-        case red, yellow, blue, cyan, magenta
+        case red, yellow, blue, cyan, magenta, green, black, white
+        case brightBlack = "bright_black"
+        case brightRed = "bright_red"
+        case brightGreen = "bright_green"
+        case brightYellow = "bright_yellow"
+        case brightBlue = "bright_blue"
+        case brightMagenta = "bright_magenta"
+        case brightCyan = "bright_cyan"
+        case brightWhite = "bright_white"
+        case selectionBg = "selection_bg"
+        case selectionFg = "selection_fg"
     }
 }
 
@@ -51,8 +73,8 @@ enum ThemeCatalog {
     static func load() -> [ThemeDefinition] {
         let candidates: [URL] = {
             var urls: [URL] = []
-            if let helper = try? InstallerService.shared.resolveHelperDirectory() {
-                urls.append(helper.appendingPathComponent("themes/terminalcolors.json"))
+            if let resource = Bundle.main.resourceURL {
+                urls.append(resource.appendingPathComponent("themes/terminalcolors.json"))
             }
             urls.append(URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Projects/zalo-theme-maple-dawn/themes/terminalcolors.json"))
             urls.append(URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("themes/terminalcolors.json"))

@@ -1,7 +1,9 @@
+import AppKit
 import SwiftUI
 
 struct ContentView: View {
     @EnvironmentObject private var state: AppState
+    @Environment(\.themePalette) private var palette
 
     private var selectedTheme: ThemeDefinition? {
         state.selectedTheme
@@ -10,9 +12,7 @@ struct ContentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             settingsPanel
-
             tipBanner
-
             if state.showLogs {
                 logPanel
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -22,7 +22,8 @@ struct ContentView: View {
         }
         .padding(18)
         .frame(minWidth: 700, idealWidth: 740, minHeight: 600, idealHeight: 660)
-        .background(AppDesign.panel)
+        .background(palette.panel)
+        .animation(.easeInOut(duration: 0.2), value: state.selectedThemeID)
         .task {
             if state.themes.isEmpty {
                 state.bootstrap()
@@ -32,10 +33,12 @@ struct ContentView: View {
         .sheet(isPresented: $state.showThemePicker) {
             ThemePickerSheet()
                 .environmentObject(state)
+                .environment(\.themePalette, state.palette)
         }
         .sheet(isPresented: $state.showFontPicker) {
             FontPickerSheet()
                 .environmentObject(state)
+                .environment(\.themePalette, state.palette)
         }
     }
 
@@ -45,9 +48,11 @@ struct ContentView: View {
             thinDivider
             SettingsRow(title: "Accent") {
                 TrailingControls {
-                    TextPill(text: selectedTheme?.mode.capitalized ?? "—")
+                    TextPill(text: state.isSystemThemeSelected ? "System" : (selectedTheme?.mode.capitalized ?? "—"))
                     if let theme = selectedTheme {
                         ColorPill(hex: theme.accentHex, color: theme.accentColor)
+                    } else {
+                        ColorPill(hex: "SYSTEM", color: palette.accent)
                     }
                 }
             }
@@ -56,6 +61,8 @@ struct ContentView: View {
                 TrailingControls {
                     if let theme = selectedTheme {
                         ColorPill(hex: theme.backgroundHex, color: theme.backgroundColor)
+                    } else {
+                        ColorPill(hex: "SYSTEM", color: palette.panel)
                     }
                 }
             }
@@ -64,6 +71,8 @@ struct ContentView: View {
                 TrailingControls {
                     if let theme = selectedTheme {
                         ColorPill(hex: theme.foregroundHex, color: theme.foregroundColor)
+                    } else {
+                        ColorPill(hex: "SYSTEM", color: palette.foreground)
                     }
                 }
             }
@@ -77,7 +86,7 @@ struct ContentView: View {
                         TextPill(text: weightLabel)
                         Image(systemName: "chevron.down")
                             .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(AppDesign.muted)
+                            .foregroundStyle(palette.muted)
                     }
                 }
                 .buttonStyle(.plain)
@@ -96,10 +105,10 @@ struct ContentView: View {
         }
         .background(
             RoundedRectangle(cornerRadius: AppDesign.corner, style: .continuous)
-                .fill(AppDesign.panel)
+                .fill(palette.panel)
                 .overlay(
                     RoundedRectangle(cornerRadius: AppDesign.corner, style: .continuous)
-                        .strokeBorder(AppDesign.panelLine, lineWidth: 1)
+                        .strokeBorder(palette.panelLine, lineWidth: 1)
                 )
         )
         .fixedSize(horizontal: false, vertical: true)
@@ -117,13 +126,13 @@ struct ContentView: View {
             AppLogoImage(size: 40)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(selectedTheme?.name ?? "Select a theme")
+                Text(state.headerTitle)
                     .font(AppDesign.mono(14, weight: .semibold))
-                    .foregroundStyle(AppDesign.foreground)
+                    .foregroundStyle(palette.foreground)
                     .lineLimit(1)
-                Text(selectedTheme.map { "\($0.family) · \($0.mode)" } ?? "\(state.themes.count) themes available")
+                Text(state.headerSubtitle)
                     .font(AppDesign.mono(11))
-                    .foregroundStyle(AppDesign.muted)
+                    .foregroundStyle(palette.muted)
                     .lineLimit(1)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -133,7 +142,7 @@ struct ContentView: View {
             }
             .buttonStyle(.plain)
             .font(AppDesign.mono(12, weight: .medium))
-            .foregroundStyle(AppDesign.muted)
+            .foregroundStyle(palette.muted)
             .frame(height: AppDesign.pillHeight)
             .disabled(state.isBusy)
 
@@ -142,7 +151,7 @@ struct ContentView: View {
             }
             .buttonStyle(.plain)
             .font(AppDesign.mono(12, weight: .medium))
-            .foregroundStyle(AppDesign.muted)
+            .foregroundStyle(palette.muted)
             .frame(height: AppDesign.pillHeight)
             .disabled(state.isBusy || !state.status.hasBackup)
 
@@ -157,7 +166,7 @@ struct ContentView: View {
                     Image(systemName: "chevron.down")
                         .font(.system(size: 13, weight: .semibold))
                 }
-                .foregroundStyle(AppDesign.foreground)
+                .foregroundStyle(palette.foreground)
                 .padding(.horizontal, 12)
                 .frame(height: AppDesign.pillHeight)
                 .background(PillBackground())
@@ -176,14 +185,19 @@ struct ContentView: View {
                 if let err = state.lastError {
                     Text(err)
                         .font(AppDesign.mono(11))
-                        .foregroundStyle(AppDesign.danger)
+                        .foregroundStyle(palette.danger)
                         .lineLimit(2)
+                } else if state.isSystemThemeSelected {
+                    Text("Pick a theme to preview it here, then Apply to Zalo")
+                        .font(AppDesign.mono(11))
+                        .foregroundStyle(palette.muted)
+                        .lineLimit(1)
                 } else {
                     Text(state.status.zaloExists
-                          ? "Ready · \(state.fontFamilies.count) system fonts"
+                          ? "Ready · \(state.fontFamilies.count) system fonts · native installer"
                           : "Zalo not found")
                         .font(AppDesign.mono(11))
-                        .foregroundStyle(AppDesign.muted)
+                        .foregroundStyle(palette.muted)
                         .lineLimit(1)
                 }
             }
@@ -212,7 +226,7 @@ struct ContentView: View {
                 .frame(height: AppDesign.pillHeight)
                 .background(
                     Capsule(style: .continuous)
-                        .fill(AppDesign.accent)
+                        .fill(palette.accent.opacity(state.isSystemThemeSelected ? 0.45 : 1))
                 )
             }
             .buttonStyle(.plain)
@@ -226,11 +240,11 @@ struct ContentView: View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: "sun.max.fill")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(AppDesign.accent)
+                .foregroundStyle(palette.accent)
                 .padding(.top, 1)
             Text("Please use the default Light theme in the Zalo app for correct color rendering.")
                 .font(AppDesign.mono(12, weight: .medium))
-                .foregroundStyle(AppDesign.foreground)
+                .foregroundStyle(palette.foreground)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
@@ -239,10 +253,10 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(AppDesign.panelSoft)
+                .fill(palette.panelSoft)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .strokeBorder(AppDesign.panelLine, lineWidth: 1)
+                        .strokeBorder(palette.panelLine, lineWidth: 1)
                 )
         )
     }
@@ -252,15 +266,13 @@ struct ContentView: View {
             HStack {
                 Text("Installer log")
                     .font(AppDesign.mono(12, weight: .semibold))
-                    .foregroundStyle(AppDesign.muted)
+                    .foregroundStyle(palette.muted)
                 Spacer()
                 if !state.logText.isEmpty {
-                    Button("Clear") {
-                        state.clearLog()
-                    }
-                    .buttonStyle(.plain)
-                    .font(AppDesign.mono(11, weight: .medium))
-                    .foregroundStyle(AppDesign.muted)
+                    Button("Clear") { state.clearLog() }
+                        .buttonStyle(.plain)
+                        .font(AppDesign.mono(11, weight: .medium))
+                        .foregroundStyle(palette.muted)
                 }
             }
 
@@ -270,7 +282,7 @@ struct ContentView: View {
                           ? "Please use the default Light theme in the Zalo app for correct color rendering.\n\nInstaller output will appear here…"
                           : state.logText)
                         .font(AppDesign.mono(11))
-                        .foregroundStyle(AppDesign.foreground)
+                        .foregroundStyle(palette.foreground)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .textSelection(.enabled)
                         .id("log-top")
@@ -279,17 +291,14 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(AppDesign.panelSoft)
+                        .fill(palette.panelSoft)
                         .overlay(
                             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .strokeBorder(AppDesign.panelLine, lineWidth: 1)
+                                .strokeBorder(palette.panelLine, lineWidth: 1)
                         )
                 )
-                .onAppear {
-                    proxy.scrollTo("log-top", anchor: .top)
-                }
+                .onAppear { proxy.scrollTo("log-top", anchor: .top) }
                 .onChange(of: state.logText) { _, _ in
-                    // Keep the start of the current Apply/Restore run visible.
                     proxy.scrollTo("log-top", anchor: .top)
                 }
             }
@@ -299,7 +308,7 @@ struct ContentView: View {
 
     private var thinDivider: some View {
         Rectangle()
-            .fill(AppDesign.panelLine.opacity(0.85))
+            .fill(palette.panelLine.opacity(0.85))
             .frame(height: 1)
             .padding(.horizontal, AppDesign.horizontalInset)
     }
@@ -307,6 +316,7 @@ struct ContentView: View {
 
 struct ThemePickerSheet: View {
     @EnvironmentObject private var state: AppState
+    @Environment(\.themePalette) private var palette
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -314,10 +324,10 @@ struct ThemePickerSheet: View {
             HStack(spacing: 12) {
                 Text("Themes")
                     .font(AppDesign.mono(14, weight: .semibold))
-                    .foregroundStyle(AppDesign.foreground)
+                    .foregroundStyle(palette.foreground)
                 Text("\(state.filteredThemes.count)/\(state.themes.count)")
                     .font(AppDesign.mono(11))
-                    .foregroundStyle(AppDesign.muted)
+                    .foregroundStyle(palette.muted)
                 Spacer()
                 Picker("Mode", selection: $state.themeFilter) {
                     ForEach(ThemeModeFilter.allCases) { mode in
@@ -329,7 +339,7 @@ struct ThemePickerSheet: View {
                 Button("Done") { dismiss() }
                     .buttonStyle(.plain)
                     .font(AppDesign.mono(12, weight: .medium))
-                    .foregroundStyle(AppDesign.accent)
+                    .foregroundStyle(palette.accent)
             }
             .padding(16)
 
@@ -342,53 +352,88 @@ struct ThemePickerSheet: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
 
-            Divider().overlay(AppDesign.panelLine)
+            Divider().overlay(palette.panelLine)
 
-            List(state.filteredThemes) { theme in
+            List {
                 Button {
-                    state.selectedThemeID = theme.id
+                    state.selectSystemTheme()
                     dismiss()
                 } label: {
                     HStack(spacing: 12) {
                         RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(theme.backgroundColor)
+                            .fill(Color(nsColor: .windowBackgroundColor))
                             .overlay(
                                 RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                    .strokeBorder(theme.accentColor, lineWidth: 2)
+                                    .strokeBorder(Color(nsColor: .controlAccentColor), lineWidth: 2)
                             )
                             .frame(width: 28, height: 28)
-
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(theme.name)
+                            Text("System Default")
                                 .font(AppDesign.mono(13, weight: .medium))
-                                .foregroundStyle(AppDesign.foreground)
-                            Text(theme.subtitle)
+                                .foregroundStyle(palette.foreground)
+                            Text("Follow macOS Light / Dark")
                                 .font(AppDesign.mono(11))
-                                .foregroundStyle(AppDesign.muted)
+                                .foregroundStyle(palette.muted)
                         }
                         Spacer()
-                        ColorPill(hex: theme.accentHex, color: theme.accentColor)
-                        if theme.id == state.selectedThemeID {
+                        if state.isSystemThemeSelected {
                             Image(systemName: "checkmark")
-                                .foregroundStyle(AppDesign.accent)
+                                .foregroundStyle(palette.accent)
                                 .font(.system(size: 12, weight: .bold))
                         }
                     }
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .listRowBackground(AppDesign.panel)
+                .listRowBackground(palette.panel)
+
+                ForEach(state.filteredThemes) { theme in
+                    Button {
+                        state.selectTheme(id: theme.id)
+                        dismiss()
+                    } label: {
+                        HStack(spacing: 12) {
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .fill(theme.backgroundColor)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                        .strokeBorder(theme.accentColor, lineWidth: 2)
+                                )
+                                .frame(width: 28, height: 28)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(theme.name)
+                                    .font(AppDesign.mono(13, weight: .medium))
+                                    .foregroundStyle(palette.foreground)
+                                Text(theme.subtitle)
+                                    .font(AppDesign.mono(11))
+                                    .foregroundStyle(palette.muted)
+                            }
+                            Spacer()
+                            ColorPill(hex: theme.accentHex, color: theme.accentColor)
+                            if theme.id == state.selectedThemeID {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(palette.accent)
+                                    .font(.system(size: 12, weight: .bold))
+                            }
+                        }
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .listRowBackground(palette.panel)
+                }
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
         }
         .frame(width: 560, height: 520)
-        .background(AppDesign.panel)
+        .background(palette.panel)
     }
 }
 
 struct FontPickerSheet: View {
     @EnvironmentObject private var state: AppState
+    @Environment(\.themePalette) private var palette
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -396,15 +441,15 @@ struct FontPickerSheet: View {
             HStack {
                 Text("System fonts")
                     .font(AppDesign.mono(14, weight: .semibold))
-                    .foregroundStyle(AppDesign.foreground)
+                    .foregroundStyle(palette.foreground)
                 Text("\(state.filteredFonts.count)/\(state.fontFamilies.count)")
                     .font(AppDesign.mono(11))
-                    .foregroundStyle(AppDesign.muted)
+                    .foregroundStyle(palette.muted)
                 Spacer()
                 Button("Done") { dismiss() }
                     .buttonStyle(.plain)
                     .font(AppDesign.mono(12, weight: .medium))
-                    .foregroundStyle(AppDesign.accent)
+                    .foregroundStyle(palette.accent)
             }
             .padding(16)
 
@@ -426,12 +471,12 @@ struct FontPickerSheet: View {
                             } label: {
                                 Text(weight.name)
                                     .font(AppDesign.mono(11, weight: .medium))
-                                    .foregroundStyle(state.selectedFontWeight == weight.weight ? .white : AppDesign.foreground)
+                                    .foregroundStyle(state.selectedFontWeight == weight.weight ? .white : palette.foreground)
                                     .padding(.horizontal, 10)
                                     .frame(height: 26)
                                     .background(
                                         Capsule(style: .continuous)
-                                            .fill(state.selectedFontWeight == weight.weight ? AppDesign.accent : AppDesign.panelSoft)
+                                            .fill(state.selectedFontWeight == weight.weight ? palette.accent : palette.panelSoft)
                                     )
                             }
                             .buttonStyle(.plain)
@@ -445,12 +490,12 @@ struct FontPickerSheet: View {
             Text("Preview — The quick brown fox jumps over 123")
                 .font(.custom(state.selectedFontFamily, size: 16))
                 .fontWeight(Font.Weight(css: state.selectedFontWeight))
-                .foregroundStyle(AppDesign.foreground)
+                .foregroundStyle(palette.foreground)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
 
-            Divider().overlay(AppDesign.panelLine)
+            Divider().overlay(palette.panelLine)
 
             List(state.filteredFonts) { family in
                 Button {
@@ -461,28 +506,28 @@ struct FontPickerSheet: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(family.name)
                                 .font(.custom(family.name, size: 14))
-                                .foregroundStyle(AppDesign.foreground)
+                                .foregroundStyle(palette.foreground)
                             Text("\(family.weights.count) weight\(family.weights.count == 1 ? "" : "s")")
                                 .font(AppDesign.mono(11))
-                                .foregroundStyle(AppDesign.muted)
+                                .foregroundStyle(palette.muted)
                         }
                         Spacer()
                         if family.name == state.selectedFontFamily {
                             Image(systemName: "checkmark")
-                                .foregroundStyle(AppDesign.accent)
+                                .foregroundStyle(palette.accent)
                                 .font(.system(size: 12, weight: .bold))
                         }
                     }
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
-                .listRowBackground(AppDesign.panel)
+                .listRowBackground(palette.panel)
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
         }
         .frame(width: 560, height: 560)
-        .background(AppDesign.panel)
+        .background(palette.panel)
     }
 }
 
