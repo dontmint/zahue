@@ -42,7 +42,6 @@ enum L10n {
         case themesCount(Int)
         case backupOK
         case noBackup
-        case refresh
         case restore
         case themes
         case pickThemeHint
@@ -89,7 +88,6 @@ enum L10n {
             case .themesCount(let n): return "\(n) themes"
             case .backupOK: return "Backup OK"
             case .noBackup: return "No backup"
-            case .refresh: return "Refresh"
             case .restore: return "Restore"
             case .themes: return "Themes"
             case .pickThemeHint: return "Pick a theme to preview it here, then Apply to Zalo"
@@ -138,7 +136,6 @@ enum L10n {
             case .themesCount(let n): return "\(n) chủ đề"
             case .backupOK: return "Đã có backup"
             case .noBackup: return "Chưa backup"
-            case .refresh: return "Làm mới"
             case .restore: return "Khôi phục"
             case .themes: return "Chủ đề"
             case .pickThemeHint: return "Chọn chủ đề để xem trước, rồi Áp dụng vào Zalo"

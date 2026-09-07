@@ -185,15 +185,6 @@ struct ContentView: View {
 
             LanguageFlagSwitcher()
 
-            Button(state.t(.refresh)) {
-                Task { await state.refreshStatus() }
-            }
-            .buttonStyle(.plain)
-            .font(AppDesign.mono(12, weight: .medium))
-            .foregroundStyle(palette.muted)
-            .frame(height: AppDesign.pillHeight)
-            .disabled(state.isBusy)
-
             Button(state.t(.restore)) {
                 Task { await state.restoreOriginal() }
             }
