@@ -23,6 +23,12 @@
   --zalo-maple-font: "Maple Mono", "Maple Mono NL", "Maple Mono NF",
     "Maple Mono Normal", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
     sans-serif;
+  /* Maple Mono weights: 400 Regular, 500 Medium, 600 SemiBold, 700 Bold */
+  --zalo-maple-weight: 600;
+  --zalo-maple-weight-strong: 700;
+  --medium: 600;
+  --semibold: 600;
+  --bold: 700;
 }
 
 html[data-zalo-theme="rose-pine-dawn"] {
@@ -254,6 +260,7 @@ html[data-zalo-theme="rose-pine-dawn"] {
 
 html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn {
   font-family: var(--zalo-maple-font) !important;
+  font-weight: var(--zalo-maple-weight) !important;
   background-color: var(--rp-surface);
   color: var(--rp-text);
   -webkit-font-smoothing: antialiased;
@@ -265,8 +272,19 @@ html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .rich-input,
 html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .rich-text-input,
 html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .chat-box-input__content__input,
 html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .conv-message,
-html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .z-conv-message {
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .z-conv-message,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .chat-info-general__item--title,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .title-name {
   font-family: var(--zalo-maple-font) !important;
+  font-weight: var(--zalo-maple-weight) !important;
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn b,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn strong,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .font-semibold,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn [style*="font-weight: 500"],
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn [style*="font-weight:500"] {
+  font-weight: var(--zalo-maple-weight-strong) !important;
 }
 
 html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .message-view__blur__overlay,

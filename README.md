@@ -35,7 +35,16 @@ Font stack:
 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif
 ```
 
-If Maple is not installed, Zalo falls back to system UI fonts.
+Default weight is **SemiBold (`600`)**, with emphasis at **Bold (`700`)**.
+
+Tune in `assets/theme.css`:
+
+```css
+--zalo-maple-weight: 600;        /* UI / messages */
+--zalo-maple-weight-strong: 700; /* b / strong */
+```
+
+If Maple is not installed, Zalo falls back to system UI fonts. Make sure the SemiBold/Bold Maple faces (or variable font) are installed in Font Book.
 
 ## Install Maple Font
 
