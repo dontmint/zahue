@@ -1,14 +1,14 @@
 import Foundation
 
 enum InstallerError: LocalizedError {
-    case nodeNotFound
+    case runtimeNotFound
     case helperNotFound(String)
     case failed(String)
 
     var errorDescription: String? {
         switch self {
-        case .nodeNotFound:
-            return "Node.js not found. Install Node 18+ (Homebrew: brew install node)."
+        case .runtimeNotFound:
+            return "Bundled installer runtime is missing. Rebuild Zalo Theme Switcher.app (no system Node.js required)."
         case .helperNotFound(let path):
             return "Installer helper not found at \(path)"
         case .failed(let message):
@@ -22,18 +22,42 @@ final class InstallerService {
 
     private init() {}
 
-    func resolveNodeBinary() -> String? {
-        if let env = ProcessInfo.processInfo.environment["NODE_BINARY"], FileManager.default.isExecutableFile(atPath: env) {
+    /// Prefer the Node binary shipped inside the .app so regular users
+    /// do not need Homebrew/Node installed. System Node remains a fallback
+    /// for local development outside the app bundle.
+    func resolveNodeBinary(helper: URL? = nil) -> String? {
+        if let env = ProcessInfo.processInfo.environment["NODE_BINARY"],
+           FileManager.default.isExecutableFile(atPath: env) {
             return env
         }
-        let candidates = [
+
+        let helperDir: URL?
+        if let helper {
+            helperDir = helper
+        } else {
+            helperDir = try? resolveHelperDirectory()
+        }
+
+        if let helperDir {
+            let bundledCandidates = [
+                helperDir.appendingPathComponent("runtime/bin/node").path,
+                helperDir.appendingPathComponent("runtime/node").path
+            ]
+            if let hit = bundledCandidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) {
+                return hit
+            }
+        }
+
+        // Dev fallback only
+        let systemCandidates = [
             "/opt/homebrew/bin/node",
             "/usr/local/bin/node",
             "/usr/bin/node"
         ]
-        if let hit = candidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) {
+        if let hit = systemCandidates.first(where: { FileManager.default.isExecutableFile(atPath: $0) }) {
             return hit
         }
+
         let which = Process()
         which.executableURL = URL(fileURLWithPath: "/usr/bin/which")
         which.arguments = ["node"]
@@ -87,15 +111,23 @@ final class InstallerService {
 
     @discardableResult
     func run(arguments: [String], onOutput: @escaping (String) -> Void) async throws -> String {
-        guard let node = resolveNodeBinary() else { throw InstallerError.nodeNotFound }
         let helper = try resolveHelperDirectory()
+        guard let node = resolveNodeBinary(helper: helper) else {
+            throw InstallerError.runtimeNotFound
+        }
         let installJS = helper.appendingPathComponent("install.js")
+        let usingBundled = node.contains("/Contents/Resources/helper/runtime/") || node.contains("/helper/runtime/")
 
         return try await withCheckedThrowingContinuation { continuation in
             let process = Process()
             process.executableURL = URL(fileURLWithPath: node)
             process.arguments = [installJS.path] + arguments
             process.currentDirectoryURL = helper
+
+            var env = ProcessInfo.processInfo.environment
+            // Keep the helper self-contained; don't depend on user PATH quirks.
+            env["PATH"] = "\(URL(fileURLWithPath: node).deletingLastPathComponent().path):/usr/bin:/bin:/usr/sbin:/sbin"
+            process.environment = env
 
             let out = Pipe()
             let err = Pipe()
@@ -145,7 +177,8 @@ final class InstallerService {
 
             do {
                 DispatchQueue.main.async {
-                    onOutput("$ node install.js \(arguments.joined(separator: " "))\n")
+                    let label = usingBundled ? "bundled-node" : "node"
+                    onOutput("$ \(label) install.js \(arguments.joined(separator: " "))\n")
                 }
                 try process.run()
             } catch {

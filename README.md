@@ -99,20 +99,23 @@ install.js         # ASAR extract → inject → replace
 
 ## macOS Theme Switcher (SwiftUI)
 
-Build a native app to switch Dawn / Moon / Main themes:
+Build a native app with a **bundled Node runtime** so regular users do **not** need Node.js installed:
 
 ```bash
 ./macos/scripts/build-app.sh
 open dist/ZaloThemeSwitcher.app
 ```
 
-See [macos/README.md](./macos/README.md).
+The build downloads a portable Node binary into `macos/runtime/` (gitignored) and embeds it at:
 
-### CLI multi-theme
+`ZaloThemeSwitcher.app/Contents/Resources/helper/runtime/bin/node`
+
+End users only need the `.app` (plus App Management permission to write under `/Applications/Zalo.app`).
+
+### CLI (developers)
 
 ```bash
-node install.js install rose-pine-dawn
-node install.js install rose-pine-moon
-node install.js install rose-pine
+node install.js list --mode dark
+node install.js install everforest-light --font "SF Pro Text" --weight 500
 node install.js uninstall
 ```

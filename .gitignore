@@ -13,3 +13,6 @@ macos/ZaloThemeSwitcher/.build/
 
 # Generated icon intermediates
 macos/assets/AppIcon.iconset/
+
+# Cached portable Node downloads (bundled into .app at build time)
+macos/runtime/

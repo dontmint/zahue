@@ -6,6 +6,7 @@ PKG="$ROOT/macos/ZaloThemeSwitcher"
 DIST="$ROOT/dist"
 APP="$DIST/ZaloThemeSwitcher.app"
 HELPER="$APP/Contents/Resources/helper"
+ENSURE_NODE="$ROOT/macos/scripts/ensure-node-runtime.sh"
 
 echo "==> Building Swift release binary"
 cd "$PKG"
@@ -61,7 +62,17 @@ echo "==> Bundling app icon"
 cp "$ROOT/macos/assets/AppIcon.icns" "$APP/Contents/Resources/AppIcon.icns"
 cp "$ROOT/macos/assets/AppLogo.png" "$APP/Contents/Resources/AppLogo.png"
 
-echo "==> Bundling Node helper"
+echo "==> Bundling portable Node runtime (users do not need Node installed)"
+chmod +x "$ENSURE_NODE"
+NODE_BIN="$("$ENSURE_NODE")"
+mkdir -p "$HELPER/runtime/bin"
+cp "$NODE_BIN" "$HELPER/runtime/bin/node"
+chmod +x "$HELPER/runtime/bin/node"
+# Keep a stable relative marker for debugging
+"$HELPER/runtime/bin/node" -v > "$HELPER/runtime/VERSION.txt"
+echo "Bundled $($HELPER/runtime/bin/node -v) ($(uname -m))"
+
+echo "==> Bundling Node helper scripts"
 cp "$ROOT/install.js" "$HELPER/"
 cp "$ROOT/package.json" "$HELPER/"
 cp "$ROOT/package-lock.json" "$HELPER/"
@@ -72,6 +83,7 @@ cp "$ROOT/themes/terminalcolors.json" "$HELPER/themes/"
 
 (
   cd "$HELPER"
+  # Install deps using the system npm if available; modules are plain JS.
   if command -v npm >/dev/null 2>&1; then
     npm ci --omit=dev
   else
@@ -79,6 +91,11 @@ cp "$ROOT/themes/terminalcolors.json" "$HELPER/themes/"
     cp -R "$ROOT/node_modules" "$HELPER/"
   fi
 )
+
+# Smoke-check: helper must run with ONLY the bundled runtime on PATH
+echo "==> Verifying bundled runtime can execute install.js"
+env -i PATH="/usr/bin:/bin" HOME="$HOME" \
+  "$HELPER/runtime/bin/node" "$HELPER/install.js" list --mode light >/dev/null
 
 # ad-hoc sign so Gatekeeper is a bit happier for local use
 if command -v codesign >/dev/null 2>&1; then
@@ -88,4 +105,5 @@ fi
 echo ""
 echo "Done: $APP"
 echo "Open with: open \"$APP\""
+echo "No system Node.js install is required for end users."
 echo "If write permission fails, grant App Management to Zalo Theme Switcher."
