@@ -32,7 +32,7 @@ enum ThemeCSSBuilder {
         let family = fontFamily.isEmpty ? "Maple Mono" : fontFamily
         let weight = fontWeight == 0 ? 600 : fontWeight
         let strong = min(900, weight + 100)
-        let sizePercent = [100, 110, 125, 150].contains(fontSizePercent) ? fontSizePercent : 100
+        let sizePercent = min(200, max(80, fontSizePercent))
         let sizeScale = String(format: "%.2f", Double(sizePercent) / 100.0)
         let selection = theme.selectionBg ?? HexColor.rgba(accent, 0.35)
         let onColor = isLight ? "#FFFFFF" : bg

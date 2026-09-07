@@ -94,29 +94,49 @@ struct ContentView: View {
             }
             thinDivider
             SettingsRow(title: "Font size") {
-                TrailingControls {
-                    ForEach(AppState.fontSizeOptions, id: \.self) { percent in
-                        Button {
-                            state.selectedFontSizePercent = percent
-                        } label: {
-                            Text("\(percent)%")
-                                .font(AppDesign.mono(11, weight: .medium))
-                                .foregroundStyle(state.selectedFontSizePercent == percent ? Color.white : palette.foreground)
-                                .padding(.horizontal, 10)
-                                .frame(height: AppDesign.pillHeight)
-                                .background(
-                                    Capsule(style: .continuous)
-                                        .fill(state.selectedFontSizePercent == percent ? palette.accent : palette.panelSoft)
-                                        .overlay(
-                                            Capsule(style: .continuous)
-                                                .strokeBorder(palette.panelLine.opacity(state.selectedFontSizePercent == percent ? 0 : 1), lineWidth: 1)
-                                        )
-                                )
-                        }
-                        .buttonStyle(.plain)
-                        .disabled(state.isBusy)
+                HStack(spacing: 8) {
+                    Button {
+                        state.bumpFontSize(by: -AppState.fontSizeStepPercent)
+                    } label: {
+                        Image(systemName: "minus")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(palette.foreground)
+                            .frame(width: 28, height: AppDesign.pillHeight)
+                            .background(PillBackground())
                     }
+                    .buttonStyle(.plain)
+                    .disabled(state.isBusy || state.selectedFontSizePercent <= AppState.fontSizeMinPercent)
+
+                    Slider(
+                        value: Binding(
+                            get: { Double(state.selectedFontSizePercent) },
+                            set: { state.selectedFontSizePercent = AppState.clampFontSize(Int($0.rounded())) }
+                        ),
+                        in: Double(AppState.fontSizeMinPercent)...Double(AppState.fontSizeMaxPercent),
+                        step: Double(AppState.fontSizeStepPercent)
+                    )
+                    .tint(palette.accent)
+                    .disabled(state.isBusy)
+
+                    Button {
+                        state.bumpFontSize(by: AppState.fontSizeStepPercent)
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundStyle(palette.foreground)
+                            .frame(width: 28, height: AppDesign.pillHeight)
+                            .background(PillBackground())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(state.isBusy || state.selectedFontSizePercent >= AppState.fontSizeMaxPercent)
+
+                    Text("\(state.selectedFontSizePercent)%")
+                        .font(AppDesign.mono(12, weight: .semibold))
+                        .foregroundStyle(palette.foreground)
+                        .monospacedDigit()
+                        .frame(width: 48, alignment: .trailing)
                 }
+                .frame(maxWidth: .infinity, alignment: .trailing)
             }
             thinDivider
             SettingsRow(title: "Status") {

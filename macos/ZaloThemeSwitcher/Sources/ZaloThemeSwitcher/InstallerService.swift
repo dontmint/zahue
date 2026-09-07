@@ -154,7 +154,7 @@ final class InstallerService {
     ) throws {
         let dest = appRoot.appendingPathComponent("pc-dist/\(ThemeCSSBuilder.assetDirName)", isDirectory: true)
         try fm.createDirectory(at: dest, withIntermediateDirectories: true)
-        let sizePercent = [100, 110, 125, 150].contains(fontSizePercent) ? fontSizePercent : 100
+        let sizePercent = min(200, max(80, fontSizePercent))
         let css = ThemeCSSBuilder.css(theme: theme, fontFamily: fontFamily, fontWeight: fontWeight, fontSizePercent: sizePercent)
         let js = ThemeCSSBuilder.js(themeId: theme.id)
         try css.write(to: dest.appendingPathComponent("theme.css"), atomically: true, encoding: .utf8)

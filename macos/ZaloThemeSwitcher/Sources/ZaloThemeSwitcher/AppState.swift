@@ -12,7 +12,10 @@ enum ThemeModeFilter: String, CaseIterable, Identifiable {
 @MainActor
 final class AppState: ObservableObject {
     static let systemThemeID = "__system__"
-    static let fontSizeOptions: [Int] = [100, 110, 125, 150]
+    /// Free-form Zalo UI text scale (rem root). Users can pick any value in range.
+    static let fontSizeMinPercent = 80
+    static let fontSizeMaxPercent = 200
+    static let fontSizeStepPercent = 5
 
     @Published var themes: [ThemeDefinition] = []
     /// `__system__` means follow macOS appearance and do not apply a catalog theme yet.
@@ -136,6 +139,14 @@ final class AppState: ObservableObject {
         }
     }
 
+    static func clampFontSize(_ value: Int) -> Int {
+        min(fontSizeMaxPercent, max(fontSizeMinPercent, value))
+    }
+
+    func bumpFontSize(by delta: Int) {
+        selectedFontSizePercent = Self.clampFontSize(selectedFontSizePercent + delta)
+    }
+
     func syncWeightForSelectedFont() {
         let weights = availableWeights.map(\.weight)
         if !weights.contains(selectedFontWeight) {
@@ -179,8 +190,8 @@ final class AppState: ObservableObject {
                 selectedFontWeight = weight
                 syncWeightForSelectedFont()
             }
-            if let size = status.fontSizePercent, Self.fontSizeOptions.contains(size) {
-                selectedFontSizePercent = size
+            if let size = status.fontSizePercent {
+                selectedFontSizePercent = Self.clampFontSize(size)
             }
             refreshPalette()
         } catch {
