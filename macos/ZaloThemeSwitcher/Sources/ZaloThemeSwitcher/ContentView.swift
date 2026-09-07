@@ -3,165 +3,204 @@ import SwiftUI
 struct ContentView: View {
     @EnvironmentObject private var state: AppState
 
+    private var selectedTheme: ThemeDefinition {
+        state.selectedTheme ?? ThemeDefinition.all[0]
+    }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            header
-            statusCard
-            themeList
-            actions
-            tips
-            logs
+        VStack(spacing: 0) {
+            settingsPanel
+                .padding(18)
+
+            if state.showLogs {
+                logPanel
+                    .padding(.horizontal, 18)
+                    .padding(.bottom, 18)
+            }
         }
-        .padding(20)
-        .background(Color(hex: 0xFAF4ED).opacity(0.35))
+        .frame(minWidth: 560, idealWidth: 620, minHeight: 420)
+        .background(AppDesign.panel)
         .task { await state.refreshStatus() }
     }
 
-    private var header: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("Zalo Theme Switcher")
-                .font(.title2.weight(.semibold))
-            Text("Maple Font + Rosé Pine themes for Zalo PC")
-                .foregroundStyle(.secondary)
-                .font(.callout)
-        }
-    }
-
-    private var statusCard: some View {
-        GroupBox {
-            VStack(alignment: .leading, spacing: 8) {
-                labeled("Zalo", state.status.zaloExists ? state.zaloPath : "Not found at \(state.zaloPath)")
-                labeled("Current theme", state.currentThemeName)
-                labeled("Backup", state.status.hasBackup ? "app.asar.bak present" : "No backup yet")
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-
-    private var themeList: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Themes")
-                .font(.headline)
-            ForEach(state.themes) { theme in
-                ThemeRow(theme: theme, selected: state.selectedThemeID == theme.id)
-                    .onTapGesture {
-                        state.selectedThemeID = theme.id
-                    }
-            }
-        }
-    }
-
-    private var actions: some View {
-        HStack(spacing: 12) {
-            Button {
-                Task { await state.applySelectedTheme() }
-            } label: {
-                if state.isBusy {
-                    ProgressView()
-                        .controlSize(.small)
-                        .padding(.trailing, 4)
+    private var settingsPanel: some View {
+        VStack(spacing: 0) {
+            headerRow
+            thinDivider
+            SettingsRow(title: "Accent") {
+                HStack(spacing: 8) {
+                    TextPill(text: "Custom")
+                    ColorPill(hex: selectedTheme.accentHex, color: selectedTheme.accent)
                 }
-                Text("Apply Theme")
             }
-            .buttonStyle(.borderedProminent)
-            .tint(Color(hex: 0x286983))
-            .disabled(state.isBusy || !state.status.zaloExists)
+            thinDivider
+            SettingsRow(title: "Background") {
+                ColorPill(hex: selectedTheme.backgroundHex, color: selectedTheme.background)
+            }
+            thinDivider
+            SettingsRow(title: "Foreground") {
+                ColorPill(hex: selectedTheme.foregroundHex, color: selectedTheme.foreground)
+            }
+            thinDivider
+            SettingsRow(title: "UI font") {
+                HStack(spacing: 8) {
+                    TextPill(text: "Maple Mono NF")
+                    TextPill(text: "SemiBold")
+                }
+            }
+            thinDivider
+            SettingsRow(title: "Status") {
+                HStack(spacing: 8) {
+                    TextPill(text: state.currentThemeName)
+                    TextPill(text: state.status.hasBackup ? "Backup OK" : "No backup")
+                }
+            }
+            thinDivider
+            actionRow
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: AppDesign.corner, style: .continuous)
+                .fill(AppDesign.panel)
+                .overlay(
+                    RoundedRectangle(cornerRadius: AppDesign.corner, style: .continuous)
+                        .strokeBorder(AppDesign.panelLine, lineWidth: 1)
+                )
+        )
+    }
 
-            Button("Restore Original") {
-                Task { await state.restoreOriginal() }
-            }
-            .disabled(state.isBusy || !state.status.hasBackup)
+    private var headerRow: some View {
+        HStack(spacing: 10) {
+            Text(selectedTheme.mode)
+                .font(AppDesign.mono(14, weight: .semibold))
+                .foregroundStyle(AppDesign.foreground)
 
             Spacer()
 
             Button("Refresh") {
                 Task { await state.refreshStatus() }
             }
+            .buttonStyle(.plain)
+            .font(AppDesign.mono(12, weight: .medium))
+            .foregroundStyle(AppDesign.muted)
+            .disabled(state.isBusy)
+
+            Button("Restore") {
+                Task { await state.restoreOriginal() }
+            }
+            .buttonStyle(.plain)
+            .font(AppDesign.mono(12, weight: .medium))
+            .foregroundStyle(AppDesign.muted)
+            .disabled(state.isBusy || !state.status.hasBackup)
+
+            Menu {
+                ForEach(state.themes) { theme in
+                    Button(theme.name) {
+                        state.selectedThemeID = theme.id
+                    }
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "textformat")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text(selectedTheme.name)
+                        .font(AppDesign.mono(12, weight: .medium))
+                    Image(systemName: "chevron.down")
+                        .font(.system(size: 9, weight: .semibold))
+                }
+                .foregroundStyle(AppDesign.foreground)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(PillBackground())
+            }
+            .menuStyle(.borderlessButton)
             .disabled(state.isBusy)
         }
+        .frame(minHeight: AppDesign.rowHeight)
+        .padding(.horizontal, 4)
     }
 
-    private var tips: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Label("Grant App Management to this app (or Terminal) in System Settings → Privacy & Security.", systemImage: "lock.shield")
-            Label("Install Maple Mono in Font Book for the intended look.", systemImage: "textformat")
-            Label("For Dawn, set Zalo appearance to Light. Re-apply after Zalo updates.", systemImage: "info.circle")
+    private var actionRow: some View {
+        HStack(spacing: 10) {
             if let err = state.lastError {
                 Text(err)
-                    .foregroundStyle(Color(hex: 0xB4637A))
-                    .font(.callout)
+                    .font(AppDesign.mono(11))
+                    .foregroundStyle(AppDesign.danger)
+                    .lineLimit(2)
+            } else {
+                Text(state.status.zaloExists ? "Ready for \(state.zaloPath)" : "Zalo not found")
+                    .font(AppDesign.mono(11))
+                    .foregroundStyle(AppDesign.muted)
+                    .lineLimit(1)
             }
+
+            Spacer()
+
+            Button {
+                state.showLogs.toggle()
+            } label: {
+                TextPill(text: state.showLogs ? "Hide log" : "Show log")
+            }
+            .buttonStyle(.plain)
+
+            Button {
+                Task { await state.applySelectedTheme() }
+            } label: {
+                HStack(spacing: 6) {
+                    if state.isBusy {
+                        ProgressView()
+                            .controlSize(.mini)
+                    }
+                    Text(state.isBusy ? "Working…" : "Apply theme")
+                        .font(AppDesign.mono(12, weight: .semibold))
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule(style: .continuous)
+                        .fill(AppDesign.accent)
+                )
+            }
+            .buttonStyle(.plain)
+            .disabled(state.isBusy || !state.status.zaloExists)
         }
-        .font(.caption)
-        .foregroundStyle(.secondary)
+        .frame(minHeight: AppDesign.rowHeight)
+        .padding(.horizontal, 4)
+        .padding(.top, 4)
     }
 
-    private var logs: some View {
-        DisclosureGroup(isExpanded: $state.showLogs) {
+    private var logPanel: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Installer log")
+                .font(AppDesign.mono(12, weight: .semibold))
+                .foregroundStyle(AppDesign.muted)
+
             ScrollView {
                 Text(state.logText.isEmpty ? "Installer output will appear here…" : state.logText)
-                    .font(.system(.caption, design: .monospaced))
+                    .font(AppDesign.mono(11))
+                    .foregroundStyle(AppDesign.foreground)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .textSelection(.enabled)
             }
-            .frame(minHeight: 120, maxHeight: 180)
-            .padding(8)
-            .background(RoundedRectangle(cornerRadius: 8).fill(Color.black.opacity(0.05)))
-        } label: {
-            Text("Installer log")
-                .font(.headline)
+            .padding(12)
+            .frame(minHeight: 120, maxHeight: 160)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(AppDesign.panelSoft)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .strokeBorder(AppDesign.panelLine, lineWidth: 1)
+                    )
+            )
         }
     }
 
-    private func labeled(_ title: String, _ value: String) -> some View {
-        HStack(alignment: .top) {
-            Text(title)
-                .foregroundStyle(.secondary)
-                .frame(width: 100, alignment: .leading)
-            Text(value)
-                .textSelection(.enabled)
-            Spacer(minLength: 0)
-        }
-        .font(.callout)
-    }
-}
-
-private struct ThemeRow: View {
-    let theme: ThemeDefinition
-    let selected: Bool
-
-    var body: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 4) {
-                ForEach(Array(theme.swatches.enumerated()), id: \.offset) { _, color in
-                    Circle()
-                        .fill(color)
-                        .frame(width: 14, height: 14)
-                        .overlay(Circle().strokeBorder(Color.black.opacity(0.08), lineWidth: 1))
-                }
-            }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(theme.name)
-                    .font(.body.weight(.medium))
-                Text("\(theme.subtitle) · \(theme.mode)")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
-            if selected {
-                Image(systemName: "checkmark.circle.fill")
-                    .foregroundStyle(Color(hex: 0x286983))
-            }
-        }
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(selected ? Color(hex: 0x286983).opacity(0.12) : Color.white.opacity(0.55))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .strokeBorder(selected ? Color(hex: 0x286983).opacity(0.45) : Color.black.opacity(0.06), lineWidth: 1)
-        )
-        .contentShape(RoundedRectangle(cornerRadius: 10))
+    private var thinDivider: some View {
+        Rectangle()
+            .fill(AppDesign.panelLine.opacity(0.85))
+            .frame(height: 1)
+            .padding(.horizontal, 4)
     }
 }

@@ -8,9 +8,11 @@ struct ZaloThemeSwitcherApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(appState)
-                .frame(minWidth: 420, idealWidth: 440, minHeight: 560, idealHeight: 620)
+                .preferredColorScheme(.light)
         }
+        .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
+        .defaultSize(width: 640, height: 460)
         .commands {
             CommandGroup(replacing: .newItem) {}
         }
