@@ -1,0 +1,318 @@
+/*
+  Zalo Theme — Maple Font + Rosé Pine Dawn
+  Light pastel theme mapped onto Zalo CSS design tokens.
+*/
+
+:root {
+  --rp-base: #faf4ed;
+  --rp-surface: #fffaf3;
+  --rp-overlay: #f2e9e1;
+  --rp-muted: #9893a5;
+  --rp-subtle: #797593;
+  --rp-text: #575279;
+  --rp-love: #b4637a;
+  --rp-gold: #ea9d34;
+  --rp-rose: #d7827e;
+  --rp-pine: #286983;
+  --rp-foam: #56949f;
+  --rp-iris: #907aa9;
+  --rp-hl-low: #f4ede8;
+  --rp-hl-med: #dfdad9;
+  --rp-hl-high: #cecacd;
+
+  --zalo-maple-font: "Maple Mono", "Maple Mono NL", "Maple Mono NF",
+    "Maple Mono Normal", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    sans-serif;
+}
+
+html[data-zalo-theme="rose-pine-dawn"] {
+  --N10: var(--rp-hl-low);
+  --N15: var(--rp-hl-low);
+  --N20: var(--rp-overlay);
+  --N25: var(--rp-overlay);
+  --N30: var(--rp-hl-med);
+  --N40: var(--rp-muted);
+  --N50: var(--rp-muted);
+  --N60: var(--rp-subtle);
+  --N70: var(--rp-subtle);
+  --N80: var(--rp-subtle);
+  --N90: var(--rp-text);
+  --N100: var(--rp-text);
+  --N200: var(--rp-text);
+  --N300: var(--rp-text);
+  --N350: var(--rp-text);
+
+  --NG10: var(--rp-base);
+  --NG15: var(--rp-base);
+  --NG20: var(--rp-overlay);
+  --NG25: var(--rp-overlay);
+  --NG30: var(--rp-hl-med);
+  --NG40: var(--rp-muted);
+  --NG50: var(--rp-muted);
+  --NG55: var(--rp-subtle);
+  --NG60: var(--rp-subtle);
+  --NG70: var(--rp-text);
+  --NG80: var(--rp-text);
+  --NG85: var(--rp-text);
+  --NG90: var(--rp-text);
+  --NG95: var(--rp-text);
+  --NG100: #ffffff;
+
+  --B10: #e6f0f3;
+  --B15: #e6f0f3;
+  --B20: #d4e7ec;
+  --B25: #d4e7ec;
+  --B30: #a8cdd5;
+  --B40: #7db3bf;
+  --B50: var(--rp-foam);
+  --B55: var(--rp-foam);
+  --B60: var(--rp-pine);
+  --B70: var(--rp-pine);
+  --B80: var(--rp-pine);
+  --B85: var(--rp-pine);
+  --B90: var(--rp-pine);
+  --B95: var(--rp-pine);
+  --B100: var(--rp-pine);
+  --B50-alpha-10: rgba(86, 148, 159, 0.1);
+  --B50-alpha-20: rgba(86, 148, 159, 0.2);
+  --B50-alpha-30: rgba(86, 148, 159, 0.3);
+
+  --R10: #f7e8ec;
+  --R15: #f7e8ec;
+  --R20: #f0d3db;
+  --R25: #f0d3db;
+  --R30: #db9aaa;
+  --R40: #c87a90;
+  --R50: var(--rp-love);
+  --R55: var(--rp-love);
+  --R60: var(--rp-love);
+  --R70: var(--rp-love);
+  --R80: var(--rp-love);
+  --R85: var(--rp-love);
+  --R90: var(--rp-love);
+  --R95: var(--rp-love);
+  --R100: var(--rp-love);
+  --R50-alpha-10: rgba(180, 99, 122, 0.1);
+  --R50-alpha-20: rgba(180, 99, 122, 0.2);
+  --R50-alpha-30: rgba(180, 99, 122, 0.3);
+
+  --OR50: var(--rp-gold);
+  --OR55: var(--rp-gold);
+  --OR60: var(--rp-gold);
+  --Y50: var(--rp-gold);
+  --Y60: var(--rp-gold);
+  --G50: var(--rp-foam);
+  --G60: var(--rp-foam);
+  --P50: var(--rp-iris);
+  --P60: var(--rp-iris);
+  --PK50: var(--rp-rose);
+  --PK60: var(--rp-rose);
+
+  --BA0: transparent;
+  --BA10: rgba(87, 82, 121, 0.08);
+  --BA20: rgba(87, 82, 121, 0.12);
+  --BA30: rgba(87, 82, 121, 0.18);
+  --BA40: rgba(87, 82, 121, 0.25);
+  --BA50: rgba(87, 82, 121, 0.35);
+  --BA70: rgba(87, 82, 121, 0.55);
+  --BA80: rgba(87, 82, 121, 0.7);
+  --BA100: #fff;
+
+  --WA0: transparent;
+  --WA10: rgba(250, 244, 237, 0.4);
+  --WA15: rgba(242, 233, 225, 0.7);
+  --WA50: rgba(255, 250, 243, 0.7);
+  --WA70: rgba(255, 250, 243, 0.85);
+  --WA80: rgba(255, 250, 243, 0.92);
+  --WA100: var(--rp-surface);
+
+  --bg-default: var(--rp-surface);
+  --title-bar: var(--rp-base);
+  --surface-background: var(--rp-base);
+  --surface-background-subtle: var(--rp-hl-low);
+  --surface-alt: var(--rp-surface);
+  --surface-background-overlay: var(--rp-overlay);
+
+  --layer-background: var(--rp-surface);
+  --layer-background-subtle: var(--rp-base);
+  --layer-background-hover: var(--rp-hl-low);
+  --layer-background-disabled: var(--rp-overlay);
+  --layer-background-selected: #e6f0f3;
+  --layer-background-inverse: var(--rp-text);
+  --layer-background-inverse-subtle: var(--rp-subtle);
+
+  --layer-background-leftmenu: var(--rp-base);
+  --layer-background-leftmenu-hover: var(--rp-overlay);
+  --layer-background-leftmenu-selected: var(--rp-overlay);
+
+  --layer-background-navbar-normal: var(--rp-base);
+  --layer-background-navbar-hover: var(--rp-overlay);
+  --layer-background-navbar-selected: var(--rp-overlay);
+
+  --text-primary: var(--rp-text);
+  --text-primary-50: rgba(87, 82, 121, 0.55);
+  --text-secondary: var(--rp-subtle);
+  --text-placeholder: var(--rp-muted);
+  --text-disabled: var(--rp-muted);
+  --text-on-color: #fff;
+  --text-errors: var(--rp-love);
+  --text-success: var(--rp-foam);
+  --text-warning: var(--rp-gold);
+  --text-information: var(--rp-pine);
+  --text-mention: var(--rp-pine);
+
+  --icon-primary: var(--rp-subtle);
+  --icon-secondary: var(--rp-muted);
+  --icon-disabled: var(--rp-muted);
+  --icon-on-color: #fff;
+  --icon-errors: var(--rp-love);
+  --icon-success: var(--rp-foam);
+  --icon-warning: var(--rp-gold);
+  --icon-information: var(--rp-pine);
+  --icon-count-noti-enable-bg: var(--rp-love);
+  --icon-count-noti-disable-bg: var(--rp-muted);
+
+  --border: var(--rp-hl-med);
+  --border-subtle: var(--rp-hl-low);
+  --border-bold: var(--rp-hl-high);
+  --border-disabled: var(--rp-hl-med);
+  --border-focused: var(--rp-foam);
+  --border-selected: var(--rp-pine);
+  --border-errors: var(--rp-love);
+  --border-success: var(--rp-foam);
+  --border-warning: var(--rp-gold);
+  --border-information: var(--rp-pine);
+
+  --divider: var(--rp-hl-med);
+  --divider-subtle: var(--rp-hl-low);
+  --divider-bold: var(--rp-hl-high);
+
+  --link: var(--rp-pine);
+  --success: var(--rp-foam);
+  --tab-txt: var(--rp-subtle);
+  --tab-inactive: var(--rp-subtle);
+  --tab-active: var(--rp-pine);
+
+  --message-view-gradient: linear-gradient(to top, #f4ede8, #faf4ed);
+  --scrollbar: var(--rp-hl-high);
+  --scrollbar-opacity: 0.55;
+  --selection: rgba(86, 148, 159, 0.35);
+  --selection-text: var(--rp-text);
+
+  --blue-message: #e4eef1;
+  --blue-message-selected: #d5e6eb;
+  --blue-message-selected-border: #b7d2d9;
+  --blue-message-border: #c5dbe1;
+  --blue-message-action: #d9e8ec;
+  --blue-message-action-border: #b7d2d9;
+  --blue-message-btn: #cfe0e6;
+  --blue-message-btn-border: #a8cdd5;
+  --blue-quote: #dce9ed;
+  --blue-quote-selected: #dce9ed;
+  --blue-quote-border: #b7d2d9;
+  --blue-quote-line: var(--rp-foam);
+  --blue-link: var(--rp-pine);
+  --blue-file-progress-track: var(--rp-overlay);
+  --blue-message-shadow: transparent;
+
+  --white-message: var(--rp-surface);
+  --white-message-selected: var(--rp-hl-low);
+  --white-message-selected-border: var(--rp-hl-med);
+  --white-message-border: var(--rp-hl-med);
+  --white-message-action: var(--rp-base);
+  --white-message-action-border: var(--rp-hl-med);
+  --white-message-btn: var(--rp-overlay);
+  --white-message-btn-border: var(--rp-hl-med);
+  --white-quote: var(--rp-hl-low);
+  --white-quote-selected: var(--rp-hl-low);
+  --white-quote-border: var(--rp-hl-med);
+  --white-quote-line: var(--rp-iris);
+  --white-link: var(--rp-pine);
+  --white-file-progress-track: var(--rp-hl-med);
+
+  --button-primary-normal: var(--rp-pine);
+  --button-primary-hover: #1f5870;
+  --button-primary-pressed: #18485c;
+  --button-primary-text: #fff;
+  --button-secondary-normal: rgba(86, 148, 159, 0.12);
+  --button-secondary-hover: rgba(86, 148, 159, 0.2);
+  --button-secondary-text: var(--rp-pine);
+  --button-danger-normal: var(--rp-love);
+  --button-danger-text: #fff;
+
+  --input-field-bg-filled: var(--rp-overlay);
+  --input-field-bg-filled-hover: var(--rp-hl-med);
+  --field-bg-filled: var(--rp-overlay);
+  --field-bg-filled-hover: var(--rp-hl-med);
+  --field-bg-outline: var(--rp-surface);
+  --field-bg-outline-hover: var(--rp-hl-low);
+
+  --item-wa-hover: var(--rp-hl-low);
+  --item-wa-select: #e6f0f3;
+  --brand-primary: var(--rp-pine);
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn {
+  font-family: var(--zalo-maple-font) !important;
+  background-color: var(--rp-surface);
+  color: var(--rp-text);
+  -webkit-font-smoothing: antialiased;
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .message-view,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .card--text,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .rich-input,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .rich-text-input,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .chat-box-input__content__input,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .conv-message,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .z-conv-message {
+  font-family: var(--zalo-maple-font) !important;
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .message-view__blur__overlay,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .message-view__blur__overlay_noavatar {
+  background-image: var(--message-view-gradient) !important;
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn #main-tab {
+  border-right: 1px solid var(--border);
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn.zalo-maple-dawn--darwin .nav__tabs__zalo {
+  padding-top: 40px;
+  padding-bottom: 16px;
+  height: auto;
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .leftbar-tab {
+  color: var(--rp-subtle);
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .leftbar-tab:hover,
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .leftbar-tab.selected {
+  color: var(--rp-pine);
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .card.me {
+  background-color: var(--blue-message);
+  border-color: var(--blue-message-border);
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .card:not(.me) {
+  background-color: var(--white-message);
+  border-color: var(--white-message-border);
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn ::selection {
+  background: var(--selection) !important;
+  color: var(--selection-text) !important;
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn div::-webkit-scrollbar-thumb {
+  background: var(--scrollbar) !important;
+  opacity: var(--scrollbar-opacity) !important;
+}
+
+html[data-zalo-theme="rose-pine-dawn"] body.zalo-maple-dawn .setting-section:has(> .setting-section-content__theme) {
+  display: none;
+}

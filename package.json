@@ -1,0 +1,19 @@
+{
+  "name": "zalo-theme-maple-dawn",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Minimal Zalo PC macOS theme: Maple Font + Rosé Pine Dawn",
+  "license": "MPL-2.0",
+  "scripts": {
+    "install-theme": "node install.js install",
+    "uninstall-theme": "node install.js uninstall"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@electron/asar": "3.3.1",
+    "fs-extra": "^11.2.0",
+    "node-html-parser": "^5.4.2"
+  }
+}
