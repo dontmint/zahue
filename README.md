@@ -114,3 +114,28 @@ open dist/ZaloThemeSwitcher.app
 Optional developer CLI (Node) still available in `install.js`, but the `.app` does not use it.
 
 See [macos/README.md](./macos/README.md).
+
+## Windows Theme Switcher (Tauri)
+
+Cross-platform GUI twin for Windows (React + Rust installer):
+
+```bash
+cd windows
+npm install
+npm run tauri:dev      # develop
+npm run tauri:build    # produce .exe / .msi on a Windows machine
+```
+
+- Same ASAR unpack + CSS/JS inject technique
+- Default Zalo path: `%LOCALAPPDATA%\Programs\Zalo`
+- Vietnamese / English UI, theme preview, font size, Apply / Restore
+- Build the Windows binary on Windows (or Windows CI)
+
+See [windows/README.md](./windows/README.md).
+
+Shared CLI also supports Windows:
+
+```bash
+node install.js status
+node install.js install rose-pine-dawn --font "Segoe UI"
+```

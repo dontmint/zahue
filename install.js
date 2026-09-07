@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Zalo PC (macOS) multi-theme installer
+ * Zalo PC multi-theme installer (macOS + Windows)
  * Themes sourced from https://terminalcolors.com (Alacritty palettes)
  * Technique adapted from ZaDark (MPL-2.0): https://github.com/ncdai/zadark
  *
  * Usage:
  *   node install.js list [--mode light|dark]
- *   node install.js status [Zalo.app]
- *   node install.js install <theme-id> [Zalo.app] [--font "Family"] [--weight 600]
- *   node install.js uninstall [Zalo.app]
+ *   node install.js status [ZaloPath]
+ *   node install.js install <theme-id> [ZaloPath] [--font "Family"] [--weight 600]
+ *   node install.js uninstall [ZaloPath]
  */
 
 const os = require('os')
@@ -20,10 +20,26 @@ const { spawnSync } = require('child_process')
 
 const ASSET_DIR_NAME = 'zalo-theme'
 const MARKER = 'data-zalo-theme-tool'
-const DEFAULT_ZALO = '/Applications/Zalo.app'
+const DEFAULT_ZALO = defaultZaloPath()
 const TMP = path.join(os.homedir(), 'zalo-theme-tmp')
 const STATE_FILE = 'theme-state.json'
 const CATALOG_PATH = path.join(__dirname, 'themes', 'terminalcolors.json')
+
+function defaultZaloPath () {
+  if (os.platform() === 'darwin') return '/Applications/Zalo.app'
+  if (os.platform() === 'win32') {
+    const local = process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local')
+    const candidates = [
+      path.join(local, 'Programs', 'Zalo'),
+      path.join(local, 'ZaloPC')
+    ]
+    for (const c of candidates) {
+      if (isDir(path.join(c, 'resources')) || isFile(path.join(c, 'Zalo.exe')) || isDir(c)) return c
+    }
+    return path.join(local, 'Programs', 'Zalo')
+  }
+  return '/Applications/Zalo.app'
+}
 
 const ALIASES = {
   'rose-pine': 'rose-pine-default'
@@ -78,13 +94,20 @@ function parseArgs (argv) {
 }
 
 function getResourcesDir (zaloAppPath) {
-  const resources = path.join(zaloAppPath, 'Contents', 'Resources')
-  if (!isDir(resources)) die(`Resources not found: ${resources}`)
-  return resources
+  const macResources = path.join(zaloAppPath, 'Contents', 'Resources')
+  if (isDir(macResources)) return macResources
+  const winResources = path.join(zaloAppPath, 'resources')
+  if (isDir(winResources)) return winResources
+  die(`Resources not found under ${zaloAppPath} (expected Contents/Resources or resources/)`)
 }
 
 function quitZalo () {
   info('Quitting Zalo if running...')
+  if (os.platform() === 'win32') {
+    spawnSync('taskkill', ['/IM', 'Zalo.exe', '/F'], { stdio: 'ignore' })
+    spawnSync('taskkill', ['/IM', 'zalo.exe', '/F'], { stdio: 'ignore' })
+    return
+  }
   spawnSync('killall', ['Zalo'], { stdio: 'ignore' })
   spawnSync('killall', ['zalo'], { stdio: 'ignore' })
 }
@@ -345,10 +368,13 @@ function patchIndexHtml (appRoot, themeId) {
   cleanInjected(head, body)
   head.insertAdjacentHTML('beforeend', `<link rel="stylesheet" href="${ASSET_DIR_NAME}/theme.css" ${MARKER}="1">`)
   body.insertAdjacentHTML('beforeend', `<script src="${ASSET_DIR_NAME}/theme.js" ${MARKER}="1"></script>`)
-  html.setAttribute('data-zalo-os', 'macOS')
+  const osLabel = os.platform() === 'darwin' ? 'macOS' : (os.platform() === 'win32' ? 'Windows' : 'Linux')
+  html.setAttribute('data-zalo-os', osLabel)
   html.setAttribute('data-zalo-theme', themeId)
-  body.classList.add('zalo-theme', 'zalo-theme--darwin')
+  body.classList.add('zalo-theme')
   body.classList.remove('zalo-maple-dawn', 'zalo-maple-dawn--darwin')
+  if (osLabel === 'macOS') body.classList.add('zalo-theme--darwin')
+  else body.classList.remove('zalo-theme--darwin')
   const csp = head.querySelector('meta[http-equiv="Content-Security-Policy"]')
   if (csp) {
     let content = csp.getAttribute('content') || ''
@@ -434,7 +460,7 @@ function listThemes (catalog, mode) {
 }
 
 async function install (themeIdRaw, zaloAppPath, fontFamily, fontWeight, catalog) {
-  if (os.platform() !== 'darwin') die('This installer currently targets macOS only.')
+  if (os.platform() !== 'darwin' && os.platform() !== 'win32') die('This installer currently targets macOS and Windows only.')
   const themeId = resolveThemeId(themeIdRaw)
   const theme = catalog.byId[themeId]
   if (!theme) die(`Unknown theme "${themeIdRaw}". Run: node install.js list`)
@@ -517,13 +543,14 @@ function uninstall (zaloAppPath) {
 function printHelp (exitCode = 0) {
   console.log(`Usage:
   node install.js list [--mode light|dark]
-  node install.js status [Zalo.app]
-  node install.js install <theme-id> [Zalo.app] [--font "Family"] [--weight 600]
-  node install.js uninstall [Zalo.app]
+  node install.js status [ZaloPath]
+  node install.js install <theme-id> [ZaloPath] [--font "Family"] [--weight 600]
+  node install.js uninstall [ZaloPath]
 
 Themes: ${CATALOG_PATH}
 Source: https://terminalcolors.com
-Default path: ${DEFAULT_ZALO}`)
+Default path: ${DEFAULT_ZALO}
+Platforms: macOS + Windows`)
   process.exit(exitCode)
 }
 
@@ -550,7 +577,7 @@ async function main () {
       const themeId = parsed._[1]
       if (!themeId) printHelp(1)
       const maybePath = parsed._[2]
-      const zaloPath = (maybePath && maybePath.startsWith('/'))
+      const zaloPath = (maybePath && (maybePath.startsWith('/') || /^[A-Za-z]:[\\/]/.test(maybePath) || maybePath.includes('\\')))
         ? maybePath
         : (parsed.flags.zalo || DEFAULT_ZALO)
       await install(themeId, zaloPath, parsed.flags.font, parsed.flags.weight, catalog)
