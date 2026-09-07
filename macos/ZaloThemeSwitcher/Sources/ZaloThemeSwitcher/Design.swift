@@ -13,7 +13,7 @@ enum AppDesign {
 
     static let corner: CGFloat = 16
     static let rowHeight: CGFloat = 40
-    static let labelWidth: CGFloat = 108
+    static let labelWidth: CGFloat = 112
     static let pillHeight: CGFloat = 30
     static let horizontalInset: CGFloat = 16
 

@@ -59,9 +59,10 @@ echo "==> Bundling Node helper"
 cp "$ROOT/install.js" "$HELPER/"
 cp "$ROOT/package.json" "$HELPER/"
 cp "$ROOT/package-lock.json" "$HELPER/"
-mkdir -p "$HELPER/assets"
+mkdir -p "$HELPER/assets" "$HELPER/themes"
 cp "$ROOT/assets/theme.css" "$HELPER/assets/"
 cp "$ROOT/assets/theme.js" "$HELPER/assets/"
+cp "$ROOT/themes/terminalcolors.json" "$HELPER/themes/"
 
 (
   cd "$HELPER"

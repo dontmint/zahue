@@ -159,8 +159,15 @@ final class InstallerService {
         return parseStatus(from: output, fallbackPath: zaloPath)
     }
 
-    func apply(themeId: String, zaloPath: String, onOutput: @escaping (String) -> Void) async throws {
-        _ = try await run(arguments: ["install", themeId, zaloPath], onOutput: onOutput)
+    func apply(themeId: String, zaloPath: String, fontFamily: String, fontWeight: Int, onOutput: @escaping (String) -> Void) async throws {
+        _ = try await run(
+            arguments: [
+                "install", themeId, zaloPath,
+                "--font", fontFamily,
+                "--weight", String(fontWeight)
+            ],
+            onOutput: onOutput
+        )
     }
 
     func restore(zaloPath: String, onOutput: @escaping (String) -> Void) async throws {
@@ -177,8 +184,12 @@ final class InstallerService {
         status.zaloExists = obj["zaloExists"] as? Bool ?? false
         status.hasBackup = obj["hasBackup"] as? Bool ?? false
         status.themeId = obj["themeId"] as? String
+        status.themeName = obj["themeName"] as? String
+        status.fontFamily = obj["fontFamily"] as? String
+        status.fontWeight = obj["fontWeight"] as? Int
         status.themed = obj["themed"] as? Bool ?? (status.themeId != nil)
         status.appAsarIsDirectory = obj["appAsarIsDirectory"] as? Bool ?? false
+        status.themeCount = obj["themeCount"] as? Int ?? 0
         return status
     }
 

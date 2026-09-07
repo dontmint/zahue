@@ -1,70 +1,37 @@
 import Foundation
 import SwiftUI
 
-struct ThemeDefinition: Identifiable, Hashable {
+struct ThemeDefinition: Identifiable, Hashable, Codable {
     let id: String
     let name: String
-    let subtitle: String
+    let family: String
+    let variant: String?
     let mode: String
-    let accentHex: String
-    let backgroundHex: String
-    let foregroundHex: String
-    let swatches: [Color]
+    let accent: String
+    let background: String
+    let foreground: String
 
-    var accent: Color { Color(hexString: accentHex) }
-    var background: Color { Color(hexString: backgroundHex) }
-    var foreground: Color { Color(hexString: foregroundHex) }
+    // optional ANSI fields from catalog
+    let red: String?
+    let yellow: String?
+    let blue: String?
+    let cyan: String?
+    let magenta: String?
 
-    static let all: [ThemeDefinition] = [
-        ThemeDefinition(
-            id: "rose-pine-dawn",
-            name: "Rosé Pine Dawn",
-            subtitle: "Warm light pastel",
-            mode: "Light theme",
-            accentHex: "#286983",
-            backgroundHex: "#FAF4ED",
-            foregroundHex: "#575279",
-            swatches: [
-                Color(hex: 0xFAF4ED),
-                Color(hex: 0x575279),
-                Color(hex: 0x286983),
-                Color(hex: 0xD7827E),
-                Color(hex: 0xEA9D34)
-            ]
-        ),
-        ThemeDefinition(
-            id: "rose-pine-moon",
-            name: "Rosé Pine Moon",
-            subtitle: "Soft dark purple",
-            mode: "Dark theme",
-            accentHex: "#3E8FB0",
-            backgroundHex: "#232136",
-            foregroundHex: "#E0DEF4",
-            swatches: [
-                Color(hex: 0x232136),
-                Color(hex: 0xE0DEF4),
-                Color(hex: 0x3E8FB0),
-                Color(hex: 0xEA9A97),
-                Color(hex: 0xC4A7E7)
-            ]
-        ),
-        ThemeDefinition(
-            id: "rose-pine",
-            name: "Rosé Pine",
-            subtitle: "Classic dark",
-            mode: "Dark theme",
-            accentHex: "#31748F",
-            backgroundHex: "#191724",
-            foregroundHex: "#E0DEF4",
-            swatches: [
-                Color(hex: 0x191724),
-                Color(hex: 0xE0DEF4),
-                Color(hex: 0x31748F),
-                Color(hex: 0xEB6F92),
-                Color(hex: 0xC4A7E7)
-            ]
-        )
-    ]
+    var accentHex: String { accent }
+    var backgroundHex: String { background }
+    var foregroundHex: String { foreground }
+    var subtitle: String { "\(family) · \(mode)" }
+    var isLight: Bool { mode == "light" }
+
+    var accentColor: Color { Color(hexString: accent) }
+    var backgroundColor: Color { Color(hexString: background) }
+    var foregroundColor: Color { Color(hexString: foreground) }
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, family, variant, mode, accent, background, foreground
+        case red, yellow, blue, cyan, magenta
+    }
 }
 
 struct InstallerStatus: Equatable {
@@ -72,8 +39,38 @@ struct InstallerStatus: Equatable {
     var zaloExists: Bool = false
     var hasBackup: Bool = false
     var themeId: String?
+    var themeName: String?
+    var fontFamily: String?
+    var fontWeight: Int?
     var themed: Bool = false
     var appAsarIsDirectory: Bool = false
+    var themeCount: Int = 0
+}
+
+enum ThemeCatalog {
+    static func load() -> [ThemeDefinition] {
+        let candidates: [URL] = {
+            var urls: [URL] = []
+            if let helper = try? InstallerService.shared.resolveHelperDirectory() {
+                urls.append(helper.appendingPathComponent("themes/terminalcolors.json"))
+            }
+            urls.append(URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Projects/zalo-theme-maple-dawn/themes/terminalcolors.json"))
+            urls.append(URL(fileURLWithPath: FileManager.default.currentDirectoryPath).appendingPathComponent("themes/terminalcolors.json"))
+            return urls
+        }()
+
+        for url in candidates {
+            if let data = try? Data(contentsOf: url),
+               let themes = try? JSONDecoder().decode([ThemeDefinition].self, from: data),
+               !themes.isEmpty {
+                return themes.sorted { a, b in
+                    if a.mode != b.mode { return a.mode == "light" }
+                    return a.name.localizedCaseInsensitiveCompare(b.name) == .orderedAscending
+                }
+            }
+        }
+        return []
+    }
 }
 
 extension Color {
