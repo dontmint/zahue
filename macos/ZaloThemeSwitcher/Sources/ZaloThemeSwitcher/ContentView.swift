@@ -249,29 +249,50 @@ struct ContentView: View {
 
     private var logPanel: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Installer log")
-                .font(AppDesign.mono(12, weight: .semibold))
-                .foregroundStyle(AppDesign.muted)
-
-            ScrollView {
-                Text(state.logText.isEmpty
-                      ? "Please use the default Light theme in the Zalo app for correct color rendering.\n\nInstaller output will appear here…"
-                      : state.logText)
-                    .font(AppDesign.mono(11))
-                    .foregroundStyle(AppDesign.foreground)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .textSelection(.enabled)
+            HStack {
+                Text("Installer log")
+                    .font(AppDesign.mono(12, weight: .semibold))
+                    .foregroundStyle(AppDesign.muted)
+                Spacer()
+                if !state.logText.isEmpty {
+                    Button("Clear") {
+                        state.clearLog()
+                    }
+                    .buttonStyle(.plain)
+                    .font(AppDesign.mono(11, weight: .medium))
+                    .foregroundStyle(AppDesign.muted)
+                }
             }
-            .padding(12)
-            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-            .background(
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(AppDesign.panelSoft)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14, style: .continuous)
-                            .strokeBorder(AppDesign.panelLine, lineWidth: 1)
-                    )
-            )
+
+            ScrollViewReader { proxy in
+                ScrollView {
+                    Text(state.logText.isEmpty
+                          ? "Please use the default Light theme in the Zalo app for correct color rendering.\n\nInstaller output will appear here…"
+                          : state.logText)
+                        .font(AppDesign.mono(11))
+                        .foregroundStyle(AppDesign.foreground)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .textSelection(.enabled)
+                        .id("log-top")
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(AppDesign.panelSoft)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .strokeBorder(AppDesign.panelLine, lineWidth: 1)
+                        )
+                )
+                .onAppear {
+                    proxy.scrollTo("log-top", anchor: .top)
+                }
+                .onChange(of: state.logText) { _, _ in
+                    // Keep the start of the current Apply/Restore run visible.
+                    proxy.scrollTo("log-top", anchor: .top)
+                }
+            }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     }

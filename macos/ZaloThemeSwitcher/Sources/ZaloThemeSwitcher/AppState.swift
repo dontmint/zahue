@@ -104,18 +104,33 @@ final class AppState: ObservableObject {
 
     func appendLog(_ chunk: String) {
         logText += chunk
-        if logText.count > 20_000 {
-            logText = String(logText.suffix(16_000))
+        // Keep the log bounded, but always cut on a newline so the visible
+        // top never starts mid-token (e.g. "ight", from a truncated JSON dump).
+        if logText.count > 40_000 {
+            let trimmed = String(logText.suffix(32_000))
+            if let newline = trimmed.firstIndex(of: "\n") {
+                logText = String(trimmed[trimmed.index(after: newline)...])
+            } else {
+                logText = trimmed
+            }
         }
     }
 
-    func refreshStatus() async {
+    func clearLog() {
+        logText = ""
+    }
+
+    func refreshStatus(logOutput: Bool = false) async {
         isBusy = true
         lastError = nil
         defer { isBusy = false }
         do {
             status = try await InstallerService.shared.status(zaloPath: zaloPath) { [weak self] chunk in
+                guard logOutput else { return }
                 Task { @MainActor in self?.appendLog(chunk) }
+            }
+            if logOutput {
+                appendLog("[status] theme=\(status.themeName ?? status.themeId ?? "none") · font=\(status.fontFamily ?? "-") · backup=\(status.hasBackup ? "yes" : "no")\n")
             }
             if let current = status.themeId, themes.contains(where: { $0.id == current }) {
                 selectedThemeID = current
@@ -138,6 +153,8 @@ final class AppState: ObservableObject {
         isBusy = true
         lastError = nil
         defer { isBusy = false }
+        clearLog()
+        showLogs = true
         do {
             try await InstallerService.shared.apply(
                 themeId: theme.id,
@@ -147,7 +164,8 @@ final class AppState: ObservableObject {
             ) { [weak self] chunk in
                 Task { @MainActor in self?.appendLog(chunk) }
             }
-            await refreshStatus()
+            await refreshStatus(logOutput: false)
+            appendLog("\n[status] applied \(status.themeName ?? theme.name) · font=\(status.fontFamily ?? selectedFontFamily)\n")
         } catch {
             lastError = error.localizedDescription
             appendLog("\n[error] \(error.localizedDescription)\n")
@@ -158,11 +176,14 @@ final class AppState: ObservableObject {
         isBusy = true
         lastError = nil
         defer { isBusy = false }
+        clearLog()
+        showLogs = true
         do {
             try await InstallerService.shared.restore(zaloPath: zaloPath) { [weak self] chunk in
                 Task { @MainActor in self?.appendLog(chunk) }
             }
-            await refreshStatus()
+            await refreshStatus(logOutput: false)
+            appendLog("\n[status] restored original Zalo\n")
         } catch {
             lastError = error.localizedDescription
             appendLog("\n[error] \(error.localizedDescription)\n")

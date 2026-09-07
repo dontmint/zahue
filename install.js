@@ -410,16 +410,8 @@ function printStatus (zaloAppPath, catalog) {
     fontFamily: state?.fontFamily || null,
     fontWeight: state?.fontWeight || null,
     themed: Boolean(state?.themeId),
-    themeCount: catalog.list.length,
-    themes: catalog.list.map((t) => ({
-      id: t.id,
-      name: t.name,
-      mode: t.mode,
-      family: t.family,
-      accent: t.accent,
-      background: t.background,
-      foreground: t.foreground
-    }))
+    // Catalog is loaded by the app from themes/terminalcolors.json (keep status small).
+    themeCount: catalog.list.length
   }
   console.log(JSON.stringify(status, null, 2))
 }
