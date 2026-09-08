@@ -16,6 +16,20 @@ The installer is **fully native Swift** (ASAR extract + HTML/CSS inject). No Nod
 
 ## Build
 
+### Option A — GitHub Actions (recommended)
+
+You do **not** need your own Mac for packaging — GitHub’s `macos-latest` runner builds it:
+
+1. Open https://github.com/dontmint/zahue/actions
+2. Choose **macOS build** → **Run workflow**
+3. Download the **zahue-macos** artifact (`ZaHue.dmg` + zip fallback)
+
+Workflow: `.github/workflows/macos-build.yml`
+
+> Native Swift still requires a **Mac machine** to compile. GitHub provides that Mac in CI. You cannot build the `.app` on Linux/Windows.
+
+### Option B — Build locally
+
 ```bash
 cd ~/Projects/zalo-theme-maple-dawn
 ./macos/scripts/build-app.sh

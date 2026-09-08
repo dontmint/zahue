@@ -110,6 +110,7 @@ open dist/ZaHue.app
 - Selecting a catalog theme live-previews that palette in the switcher
 - Apply/Restore uses Swift ASAR extract + HTML/CSS injection
 - App size ~3MB (no embedded Node runtime)
+- **CI:** GitHub Actions → **macOS build** workflow uploads `ZaHue.dmg`
 
 Optional developer CLI (Node) still available in `install.js`, but the `.app` does not use it.
 

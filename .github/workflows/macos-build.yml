@@ -1,0 +1,74 @@
+name: macOS build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "macos/**"
+      - "themes/**"
+      - ".github/workflows/macos-build.yml"
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Swift / Xcode versions
+        run: |
+          swift --version
+          xcodebuild -version
+
+      - name: Build ZaHue.app
+        run: ./macos/scripts/build-app.sh
+
+      - name: Package DMG
+        run: |
+          set -euo pipefail
+          APP="dist/ZaHue.app"
+          STAGE="dist/dmg-stage"
+          DMG="dist/ZaHue.dmg"
+          rm -rf "$STAGE" "$DMG"
+          mkdir -p "$STAGE"
+          cp -R "$APP" "$STAGE/"
+          ln -s /Applications "$STAGE/Applications"
+          # UDZO = compressed read-only DMG
+          hdiutil create \
+            -volname "ZaHue" \
+            -srcfolder "$STAGE" \
+            -ov \
+            -format UDZO \
+            "$DMG"
+          ls -lh "$DMG"
+          rm -rf "$STAGE"
+
+      - name: Also zip the .app (fallback)
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent dist/ZaHue.app dist/ZaHue-macOS.zip
+          ls -lh dist/ZaHue-macOS.zip
+
+      - name: Upload macOS artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: zahue-macos
+          path: |
+            dist/ZaHue.dmg
+            dist/ZaHue-macOS.zip
+          if-no-files-found: error
+
+      - name: Attach to GitHub Release
+        if: github.event_name == 'release'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release upload "${{ github.ref_name }}" \
+            dist/ZaHue.dmg \
+            dist/ZaHue-macOS.zip \
+            --clobber
