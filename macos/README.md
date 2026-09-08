@@ -1,6 +1,6 @@
 # ZaHue (macOS)
 
-Native **SwiftUI** app that themes Zalo PC (80+ palettes) and any installed system font.
+Native **SwiftUI** app that themes Zalo PC (80 palettes) and any installed system font.
 
 The installer is **fully native Swift** (ASAR extract + HTML/CSS inject). No Node.js runtime is required for end users or the app itself.
 
@@ -9,7 +9,7 @@ The installer is **fully native Swift** (ASAR extract + HTML/CSS inject). No Nod
 ### End users
 - macOS 14+
 - App Management permission for **ZaHue**
-- Keep Zalo’s built-in appearance on **Light** for correct colors
+- Keep Zalo’s built-in appearance on **Light** for light themes
 
 ### Developers (building the .app)
 - Apple Swift toolchain (Command Line Tools is enough)
@@ -31,7 +31,6 @@ Workflow: `.github/workflows/macos-build.yml`
 ### Option B — Build locally
 
 ```bash
-cd ~/Projects/zalo-theme-maple-dawn
 ./macos/scripts/build-app.sh
 open dist/ZaHue.app
 ```

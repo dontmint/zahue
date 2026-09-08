@@ -5,13 +5,13 @@
 <h1 align="center">ZaHue</h1>
 
 <p align="center">
-  <strong>Theme switcher for Zalo PC</strong> — 80+ palettes, custom fonts, native installers.
+  <strong>Theme switcher for Zalo PC</strong> — 80 palettes, custom fonts, native installers.
 </p>
 
 <p align="center">
   <a href="https://github.com/dontmint/zahue/actions/workflows/macos-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/dontmint/zahue/macos-build.yml?branch=main&style=for-the-badge&logo=apple&logoColor=white&label=macOS" alt="macOS build" /></a>
   <a href="https://github.com/dontmint/zahue/actions/workflows/windows-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/dontmint/zahue/windows-build.yml?branch=main&style=for-the-badge&logo=windows&logoColor=white&label=Windows" alt="Windows build" /></a>
-  <img src="https://img.shields.io/badge/themes-80%2B-7c3aed?style=for-the-badge&logo=palette&logoColor=white" alt="80+ themes" />
+  <img src="https://img.shields.io/badge/themes-80-7c3aed?style=for-the-badge&logo=palette&logoColor=white" alt="80 themes" />
   <img src="https://img.shields.io/badge/license-MPL--2.0-blue?style=for-the-badge" alt="MPL-2.0" />
 </p>
 
@@ -30,116 +30,48 @@
 3. Keep an `app.asar.bak` for clean Restore
 4. Switch themes without reinstalling Zalo
 
-Inspired by [ZaDark](https://github.com/ncdai/zadark) (MPL-2.0) Electron ASAR patching.
+Inspired by [ZaDark](https://github.com/ncdai/zadark) (MPL-2.0) Electron ASAR patching. Theme palettes are sourced from [terminalcolors.com](https://terminalcolors.com) Alacritty catalogs.
 
-## Theme
+## Download
 
-| Role | Hex |
-|------|-----|
-| Base | `#faf4ed` |
-| Surface | `#fffaf3` |
-| Overlay | `#f2e9e1` |
-| Muted | `#9893a5` |
-| Subtle | `#797593` |
-| Text | `#575279` |
-| Love | `#b4637a` |
-| Gold | `#ea9d34` |
-| Rose | `#d7827e` |
-| Pine | `#286983` |
-| Foam | `#56949f` |
-| Iris | `#907aa9` |
+| Platform | Artifact | How |
+|----------|----------|-----|
+| **macOS** | `ZaHue.dmg` | [Releases](https://github.com/dontmint/zahue/releases) or Actions → **macOS build** |
+| **Windows** | NSIS `.exe` / `.msi` | [Releases](https://github.com/dontmint/zahue/releases) or Actions → **Windows build** |
 
-Font stack:
+First launch on macOS (ad-hoc signed): **Right-click → Open** if Gatekeeper warns.
 
-```css
-"Maple Mono", "Maple Mono NL", "Maple Mono NF", "Maple Mono Normal",
-ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif
-```
+## Features
 
-Default weight is **SemiBold (`600`)**, with emphasis at **Bold (`700`)**.
-
-Tune in `assets/theme.css`:
-
-```css
---zalo-maple-weight: 600;        /* UI / messages */
---zalo-maple-weight-strong: 700; /* b / strong */
-```
-
-If Maple is not installed, Zalo falls back to system UI fonts. Make sure the SemiBold/Bold Maple faces (or variable font) are installed in Font Book.
-
-## Install Maple Font
-
-Download from: https://github.com/subframe7536/maple-font
-
-Install the `.ttf` / `.otf` into **Font Book**, then restart Zalo.
-
-## Usage (macOS)
-
-```bash
-cd ~/Projects/zalo-theme-maple-dawn
-npm install
-
-# Grant Terminal App Management permission first (System Settings → Privacy & Security)
-# Set Zalo appearance to Light
-
-# Quit Zalo, then:
-node install.js install
-
-# Restore original:
-node install.js uninstall
-```
-
-Custom Zalo path:
-
-```bash
-node install.js install /path/to/Zalo.app
-```
-
-## Important notes
-
-- Re-install after every Zalo update (updates overwrite the patch)
-- Needs write access under `/Applications/Zalo.app`
-- Modifies a third-party app — may conflict with Zalo ToS / future integrity checks
-- Dawn is a **light** theme; keep Zalo's built-in theme on Light
-- Chat UI in monospace is intentional; switch the CSS font stack if you prefer proportional text
-
-## Files
-
-```
-assets/theme.css   # Rosé Pine Dawn → Zalo token map + Maple font
-assets/theme.js    # Tiny bootstrap (sets data attributes / classes)
-install.js         # ASAR extract → inject → replace
-```
-
-## Customize
-
-- Colors: edit `assets/theme.css` (`--rp-*` variables)
-- Font: change `--zalo-maple-font`
-- Then run `node install.js install` again
-
+- **80 themes** (18 light / 62 dark) from `themes/terminalcolors.json`
+- Live palette preview in the switcher UI
+- Any installed system font (Maple Mono preferred if present; not required)
+- Font weight + UI size (rem scale)
+- Vietnamese default UI + English toggle
+- Apply / Restore with installer log
+- Native apps — no Node.js runtime for end users
 
 ## ZaHue for macOS (SwiftUI)
 
-Fully **native Swift** installer (no Node.js in the app):
+Fully **native Swift** installer (~1.6MB app bundle):
 
 ```bash
 ./macos/scripts/build-app.sh
 open dist/ZaHue.app
 ```
 
-- Default UI follows **System Default** (macOS Light/Dark)
-- Selecting a catalog theme live-previews that palette in the switcher
+Or download the DMG from CI / Releases (no local Xcode needed).
+
+- Default chrome follows **System Default** (macOS Light/Dark)
+- Selecting a catalog theme live-previews that palette
 - Apply/Restore uses Swift ASAR extract + HTML/CSS injection
-- App size ~3MB (no embedded Node runtime)
-- **CI:** GitHub Actions → **macOS build** workflow uploads `ZaHue.dmg`
+- Needs **App Management** permission to write under `/Applications/Zalo.app`
 
-Optional developer CLI (Node) still available in `install.js`, but the `.app` does not use it.
-
-See [macos/README.md](./macos/README.md) for ZaHue macOS details.
+See [macos/README.md](./macos/README.md).
 
 ## ZaHue for Windows (Tauri)
 
-Cross-platform GUI twin for Windows (React + Rust installer):
+Cross-platform GUI twin (React + Rust installer):
 
 ```bash
 cd windows
@@ -148,16 +80,61 @@ npm run tauri:dev      # develop (UI on any OS; Apply needs Windows Zalo)
 npm run tauri:build    # produce .exe / .msi on a Windows machine
 ```
 
-- Same ASAR unpack + CSS/JS inject technique
 - Default Zalo path: `%LOCALAPPDATA%\Programs\Zalo`
-- Vietnamese / English UI, theme preview, font size, Apply / Restore
-- **From macOS:** use GitHub Actions → **Windows build** workflow, then download the `zahue-windows` artifact
+- **From macOS:** GitHub Actions → **Windows build** → download `zahue-windows`
 
-See [windows/README.md](./windows/README.md) for ZaHue Windows details.
+See [windows/README.md](./windows/README.md).
 
-Shared CLI also supports Windows:
+## Optional CLI (developers)
+
+Node 18+ helper at repo root (macOS + Windows):
 
 ```bash
-node install.js status
-node install.js install rose-pine-dawn --font "Segoe UI"
+npm install
+
+node install.js list [--mode light|dark]
+node install.js status [ZaloPath]
+node install.js install <theme-id> [ZaloPath] [--font "Family"] [--weight 600]
+node install.js uninstall [ZaloPath]
 ```
+
+Examples:
+
+```bash
+node install.js install rose-pine-dawn
+node install.js install rose-pine-dawn --font "SF Pro Text" --weight 500
+node install.js install rose-pine-moon --font "Segoe UI"
+node install.js uninstall
+```
+
+Shortcuts in `package.json`: `npm run theme:list`, `theme:dawn`, `theme:moon`, `theme:restore`.
+
+## Important notes
+
+- Re-apply after every Zalo update (updates can replace `app.asar`)
+- Keep Zalo’s built-in appearance on **Light** when using light themes (recommended for most palettes)
+- Modifies a third-party app — may conflict with Zalo ToS / future integrity checks
+- Needs write access under `/Applications/Zalo.app` (macOS) or the Zalo install folder (Windows)
+
+## Repo layout
+
+```
+themes/terminalcolors.json   # 80-theme catalog
+assets/theme.js              # Tiny bootstrap injected into Zalo
+assets/theme.css             # Placeholder (CSS is generated at apply time)
+install.js                   # Optional Node CLI (ASAR extract → inject)
+macos/                       # Native SwiftUI app + build script
+windows/                     # Tauri + React Windows app
+docs/assets/                 # README / branding artwork
+.github/workflows/           # macOS + Windows CI builds
+```
+
+## Customize
+
+- **Pick a theme:** use ZaHue.app / Windows GUI, or `node install.js list`
+- **Catalog:** edit / extend `themes/terminalcolors.json`
+- **Fonts:** choose any installed family in the GUI, or `--font` on the CLI
+
+## License
+
+[MPL-2.0](./LICENSE) — technique adapted from ZaDark; palettes from terminalcolors.com.

@@ -63,7 +63,7 @@ Artifacts land under:
 
 ## Features
 
-- 80+ themes from `themes/terminalcolors.json`
+- 80 themes from `themes/terminalcolors.json`
 - Live palette preview in the switcher UI
 - Font family / weight / size (rem scale)
 - Vietnamese default + English flag toggle
