@@ -1,8 +1,8 @@
 {
   "name": "zahue",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "private": true,
-  "description": "ZaHue — Zalo PC theme switcher (macOS + Windows + Linux)",
+  "description": "ZaHue \u2014 Zalo PC theme switcher (macOS + Windows + Linux)",
   "license": "MPL-2.0",
   "scripts": {
     "install-theme": "node install.js install",

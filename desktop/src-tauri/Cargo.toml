@@ -1,6 +1,6 @@
 [package]
 name = "zahue-desktop"
-version = "0.2.0"
+version = "0.2.1"
 description = "ZaHue desktop GUI for Windows + Linux — Zalo PC theme switcher"
 authors = ["you"]
 edition = "2021"
