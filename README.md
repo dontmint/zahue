@@ -1,13 +1,34 @@
-# ZaHue
+<p align="center">
+  <img src="docs/assets/zahue-logo-256.png" alt="ZaHue" width="160" />
+</p>
 
-**ZaHue** — custom theme switcher for **Zalo PC** (macOS + Windows).
+<h1 align="center">ZaHue</h1>
 
-Not a ZaDark fork with full UI — just:
+<p align="center">
+  <strong>Theme switcher for Zalo PC</strong> — 80+ palettes, custom fonts, native installers.
+</p>
+
+<p align="center">
+  <a href="https://github.com/dontmint/zahue/actions/workflows/macos-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/dontmint/zahue/macos-build.yml?branch=main&style=for-the-badge&logo=apple&logoColor=white&label=macOS" alt="macOS build" /></a>
+  <a href="https://github.com/dontmint/zahue/actions/workflows/windows-build.yml"><img src="https://img.shields.io/github/actions/workflow/status/dontmint/zahue/windows-build.yml?branch=main&style=for-the-badge&logo=windows&logoColor=white&label=Windows" alt="Windows build" /></a>
+  <img src="https://img.shields.io/badge/themes-80%2B-7c3aed?style=for-the-badge&logo=palette&logoColor=white" alt="80+ themes" />
+  <img src="https://img.shields.io/badge/license-MPL--2.0-blue?style=for-the-badge" alt="MPL-2.0" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/SwiftUI-native-F05138?style=flat-square&logo=swift&logoColor=white" alt="SwiftUI" />
+  <img src="https://img.shields.io/badge/Tauri-Windows-FFC131?style=flat-square&logo=tauri&logoColor=black" alt="Tauri" />
+  <img src="https://img.shields.io/badge/VI%20%2F%20EN-localized-00A86B?style=flat-square" alt="Localized" />
+  <img src="https://img.shields.io/badge/Electron-ASAR%20patch-47848F?style=flat-square&logo=electron&logoColor=white" alt="Electron ASAR" />
+  <a href="https://github.com/dontmint/zahue/stargazers"><img src="https://img.shields.io/github/stars/dontmint/zahue?style=flat-square" alt="Stars" /></a>
+</p>
+
+**ZaHue** applies catalog themes to **Zalo PC** on macOS and Windows:
 
 1. Unpack Zalo `app.asar`
-2. Inject Rosé Pine Dawn CSS token overrides
-3. Prefer **Maple Mono** if installed on the system
-4. Keep an `app.asar.bak` for clean uninstall
+2. Inject CSS token overrides + optional UI font / size
+3. Keep an `app.asar.bak` for clean Restore
+4. Switch themes without reinstalling Zalo
 
 Inspired by [ZaDark](https://github.com/ncdai/zadark) (MPL-2.0) Electron ASAR patching.
 
