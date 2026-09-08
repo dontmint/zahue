@@ -4845,8 +4845,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "zahue-windows"
-version = "0.1.0"
+name = "zahue-desktop"
+version = "0.2.0"
 dependencies = [
  "chrono",
  "dirs",

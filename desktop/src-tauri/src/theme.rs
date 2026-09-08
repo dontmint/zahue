@@ -1,6 +1,8 @@
 use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::{Path, PathBuf};
+#[cfg(target_os = "linux")]
+use std::process::Command;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Theme {
@@ -137,15 +139,58 @@ pub fn default_zalo_path() -> String {
             .display()
             .to_string();
     }
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
     {
         "/Applications/Zalo.app".to_string()
     }
+    #[cfg(target_os = "linux")]
+    {
+        let home = dirs::home_dir().unwrap_or_else(|| PathBuf::from("."));
+        let cwd = std::env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+        let candidates = [
+            PathBuf::from("/opt/Zalo"),
+            PathBuf::from("/opt/zalo"),
+            PathBuf::from("/usr/lib/zalo"),
+            PathBuf::from("/usr/share/zalo"),
+            home.join(".local/share/Zalo"),
+            home.join(".local/share/zalo"),
+            home.join("Applications/Zalo"),
+            home.join("Applications/zalo"),
+            home.join("zalo-for-linux/app"),
+            home.join("zalo-linux/app"),
+            home.join("zalo-linux-2026/app"),
+            home.join("squashfs-root"),
+            cwd.join("squashfs-root"),
+        ];
+        for c in &candidates {
+            if looks_like_zalo_install(c) {
+                return c.display().to_string();
+            }
+        }
+        "/opt/Zalo".to_string()
+    }
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
+    {
+        "/opt/Zalo".to_string()
+    }
+}
+
+#[cfg(target_os = "linux")]
+fn looks_like_zalo_install(path: &Path) -> bool {
+    path.join("resources").join("app.asar").is_file()
+        || path.join("resources").is_dir()
+        || path.join("app.asar").is_file()
+        || (path.is_dir()
+            && (path.join("zalo").is_file()
+                || path.join("Zalo").is_file()
+                || path.join("AppRun").is_file()))
 }
 
 pub fn list_fonts() -> Vec<String> {
     use std::collections::BTreeSet;
-    let mut fonts: BTreeSet<String> = [
+
+    #[cfg(windows)]
+    let defaults: &[&str] = &[
         "Maple Mono",
         "Segoe UI",
         "Arial",
@@ -161,10 +206,43 @@ pub fn list_fonts() -> Vec<String> {
         "Microsoft YaHei",
         "Noto Sans",
         "Inter",
-    ]
-    .into_iter()
-    .map(str::to_string)
-    .collect();
+    ];
+    #[cfg(target_os = "macos")]
+    let defaults: &[&str] = &[
+        "Maple Mono",
+        "Segoe UI",
+        "Arial",
+        "Calibri",
+        "Cambria",
+        "Consolas",
+        "Courier New",
+        "Georgia",
+        "Tahoma",
+        "Times New Roman",
+        "Trebuchet MS",
+        "Verdana",
+        "Microsoft YaHei",
+        "Noto Sans",
+        "Inter",
+    ];
+    #[cfg(target_os = "linux")]
+    let defaults: &[&str] = &[
+        "Maple Mono",
+        "Noto Sans",
+        "DejaVu Sans",
+        "Ubuntu",
+        "Cantarell",
+        "Inter",
+        "Arial",
+        "Courier New",
+        "Georgia",
+        "Times New Roman",
+        "Verdana",
+    ];
+    #[cfg(not(any(windows, target_os = "macos", target_os = "linux")))]
+    let defaults: &[&str] = &["Maple Mono", "Noto Sans", "Inter"];
+
+    let mut fonts: BTreeSet<String> = defaults.iter().map(|s| (*s).to_string()).collect();
 
     let mut dirs: Vec<PathBuf> = Vec::new();
     #[cfg(windows)]
@@ -176,7 +254,7 @@ pub fn list_fonts() -> Vec<String> {
             dirs.push(local.join("Microsoft").join("Windows").join("Fonts"));
         }
     }
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
     {
         dirs.push(PathBuf::from("/System/Library/Fonts"));
         dirs.push(PathBuf::from("/Library/Fonts"));
@@ -184,13 +262,47 @@ pub fn list_fonts() -> Vec<String> {
             dirs.push(home.join("Library/Fonts"));
         }
     }
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(output) = Command::new("fc-list")
+            .args([":", "family"])
+            .output()
+        {
+            if let Ok(text) = String::from_utf8(output.stdout) {
+                for line in text.lines() {
+                    for part in line.split(',') {
+                        let family = part.trim();
+                        if !family.is_empty() {
+                            fonts.insert(family.to_string());
+                        }
+                    }
+                }
+            }
+        }
+        dirs.push(PathBuf::from("/usr/share/fonts"));
+        dirs.push(PathBuf::from("/usr/local/share/fonts"));
+        if let Some(home) = dirs::home_dir() {
+            dirs.push(home.join(".local/share/fonts"));
+            dirs.push(home.join(".fonts"));
+        }
+    }
 
-    for dir in dirs {
-        let Ok(entries) = fs::read_dir(dir) else {
+    scan_font_dirs(&dirs, &mut fonts);
+    fonts.into_iter().collect()
+}
+
+fn scan_font_dirs(dirs: &[PathBuf], fonts: &mut std::collections::BTreeSet<String>) {
+    let mut stack: Vec<PathBuf> = dirs.to_vec();
+    while let Some(dir) = stack.pop() {
+        let Ok(entries) = fs::read_dir(&dir) else {
             continue;
         };
         for entry in entries.flatten() {
             let path = entry.path();
+            if path.is_dir() {
+                stack.push(path);
+                continue;
+            }
             let ext = path
                 .extension()
                 .and_then(|e| e.to_str())
@@ -213,6 +325,4 @@ pub fn list_fonts() -> Vec<String> {
             }
         }
     }
-
-    fonts.into_iter().collect()
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * ZaHue installer for Zalo PC (macOS + Windows)
+ * ZaHue installer for Zalo PC (macOS + Windows + Linux)
  * Themes sourced from https://terminalcolors.com (Alacritty palettes)
  * Technique adapted from ZaDark (MPL-2.0): https://github.com/ncdai/zadark
  *
@@ -38,7 +38,47 @@ function defaultZaloPath () {
     }
     return path.join(local, 'Programs', 'Zalo')
   }
-  return '/Applications/Zalo.app'
+  if (os.platform() === 'linux') {
+    const home = os.homedir()
+    const candidates = [
+      '/opt/Zalo',
+      '/opt/zalo',
+      '/usr/lib/zalo',
+      '/usr/share/zalo',
+      path.join(home, '.local', 'share', 'Zalo'),
+      path.join(home, '.local', 'share', 'zalo'),
+      path.join(home, 'Applications', 'Zalo'),
+      path.join(home, 'Applications', 'zalo'),
+      path.join(home, 'zalo-for-linux', 'app'),
+      path.join(home, 'zalo-linux', 'app'),
+      path.join(home, 'zalo-linux-2026', 'app'),
+      path.join(home, 'squashfs-root'),
+      path.join(process.cwd(), 'squashfs-root')
+    ]
+    for (const c of candidates) {
+      if (looksLikeZaloInstall(c)) return c
+    }
+    return '/opt/Zalo'
+  }
+  return '/opt/Zalo'
+}
+
+function looksLikeZaloInstall (p) {
+  return isFile(path.join(p, 'resources', 'app.asar'))
+    || isDir(path.join(p, 'resources'))
+    || isFile(path.join(p, 'app.asar'))
+    || isDir(path.join(p, 'app.asar'))
+    || (isDir(p) && (isFile(path.join(p, 'zalo')) || isFile(path.join(p, 'Zalo')) || isFile(path.join(p, 'AppRun'))))
+}
+
+function isAppImagePath (p) {
+  return /\.AppImage$/i.test(String(p || ''))
+}
+
+function hasAsar (dir) {
+  return isFile(path.join(dir, 'app.asar'))
+    || isDir(path.join(dir, 'app.asar'))
+    || isFile(path.join(dir, 'app.asar.bak'))
 }
 
 const ALIASES = {
@@ -94,11 +134,31 @@ function parseArgs (argv) {
 }
 
 function getResourcesDir (zaloAppPath) {
-  const macResources = path.join(zaloAppPath, 'Contents', 'Resources')
-  if (isDir(macResources)) return macResources
-  const winResources = path.join(zaloAppPath, 'resources')
-  if (isDir(winResources)) return winResources
-  die(`Resources not found under ${zaloAppPath} (expected Contents/Resources or resources/)`)
+  const probes = [
+    path.join(zaloAppPath, 'Contents', 'Resources'),
+    path.join(zaloAppPath, 'resources'),
+    path.join(zaloAppPath, 'squashfs-root', 'resources'),
+    path.join(zaloAppPath, 'app', 'Contents', 'Resources'),
+    path.join(zaloAppPath, 'app', 'resources')
+  ]
+  for (const dir of probes) {
+    if (hasAsar(dir)) return dir
+  }
+  if (hasAsar(zaloAppPath)) return zaloAppPath
+
+  if (isAppImagePath(zaloAppPath)) {
+    die(
+      `AppImage installs are usually read-only. Extract first with ` +
+      `\`./${path.basename(zaloAppPath)} --appimage-extract\`, then point ZaHue at the resulting \`squashfs-root\` directory ` +
+      `(or an extracted/writable install under /opt/Zalo).`
+    )
+  }
+
+  const fallback = (String(zaloAppPath).endsWith('.app') || String(zaloAppPath).includes('Contents'))
+    ? path.join(zaloAppPath, 'Contents', 'Resources')
+    : path.join(zaloAppPath, 'resources')
+  if (isDir(fallback)) return fallback
+  die(`Resources not found under ${zaloAppPath} (expected Contents/Resources, resources/, squashfs-root/resources, or app/resources)`)
 }
 
 function quitZalo () {
@@ -107,6 +167,9 @@ function quitZalo () {
     spawnSync('taskkill', ['/IM', 'Zalo.exe', '/F'], { stdio: 'ignore' })
     spawnSync('taskkill', ['/IM', 'zalo.exe', '/F'], { stdio: 'ignore' })
     return
+  }
+  if (os.platform() === 'linux') {
+    spawnSync('pkill', ['-f', '-i', 'zalo'], { stdio: 'ignore' })
   }
   spawnSync('killall', ['Zalo'], { stdio: 'ignore' })
   spawnSync('killall', ['zalo'], { stdio: 'ignore' })
@@ -460,7 +523,6 @@ function listThemes (catalog, mode) {
 }
 
 async function install (themeIdRaw, zaloAppPath, fontFamily, fontWeight, catalog) {
-  if (os.platform() !== 'darwin' && os.platform() !== 'win32') die('This installer currently targets macOS and Windows only.')
   const themeId = resolveThemeId(themeIdRaw)
   const theme = catalog.byId[themeId]
   if (!theme) die(`Unknown theme "${themeIdRaw}". Run: node install.js list`)
@@ -550,7 +612,10 @@ function printHelp (exitCode = 0) {
 Themes: ${CATALOG_PATH}
 Source: https://terminalcolors.com
 Default path: ${DEFAULT_ZALO}
-Platforms: macOS + Windows`)
+Platforms: macOS + Windows + Linux
+
+Linux tip: AppImages are often read-only. Extract with \`./Zalo*.AppImage --appimage-extract\`
+and point ZaHue at \`squashfs-root\` (or a writable install under /opt/Zalo).`)
   process.exit(exitCode)
 }
 

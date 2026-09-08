@@ -309,8 +309,23 @@ fn read_installed_state(app_asar: &Path) -> Option<InstalledState> {
     None
 }
 
-/// Resolve Electron resources directory for macOS .app or Windows install tree.
+/// Resolve Electron resources directory across Windows, macOS, and Linux layouts.
 pub fn resources_dir(zalo_path: &Path) -> PathBuf {
+    let probes = [
+        zalo_path.join("Contents").join("Resources"),
+        zalo_path.join("resources"),
+        zalo_path.join("squashfs-root").join("resources"),
+        zalo_path.join("app").join("Contents").join("Resources"),
+        zalo_path.join("app").join("resources"),
+    ];
+    for dir in &probes {
+        if dir.join("app.asar").is_file() || dir.join("app.asar.bak").is_file() {
+            return dir.clone();
+        }
+    }
+    if zalo_path.join("app.asar").is_file() || zalo_path.join("app.asar.bak").is_file() {
+        return zalo_path.to_path_buf();
+    }
     let s = zalo_path.to_string_lossy();
     if s.ends_with(".app") || s.contains("Contents") {
         zalo_path.join("Contents").join("Resources")
@@ -340,8 +355,26 @@ fn quit_zalo(log: &mut String) {
             .stderr(std::process::Stdio::null())
             .status();
     }
-    #[cfg(not(windows))]
+    #[cfg(target_os = "macos")]
     {
+        let _ = Command::new("killall")
+            .arg("Zalo")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status();
+        let _ = Command::new("killall")
+            .arg("zalo")
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status();
+    }
+    #[cfg(target_os = "linux")]
+    {
+        let _ = Command::new("pkill")
+            .args(["-f", "-i", "zalo"])
+            .stdout(std::process::Stdio::null())
+            .stderr(std::process::Stdio::null())
+            .status();
         let _ = Command::new("killall")
             .arg("Zalo")
             .stdout(std::process::Stdio::null())
