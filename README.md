@@ -5,7 +5,11 @@
 <h1 align="center">ZaHue</h1>
 
 <p align="center">
-  <strong>Theme switcher for Zalo PC</strong> — 80 palettes, custom fonts, native installers.
+  <strong>Công cụ đổi giao diện Zalo PC</strong> — 80 bảng màu, font tùy chỉnh, trình cài đặt gốc.
+</p>
+
+<p align="center">
+  <strong>🇻🇳 Tiếng Việt</strong> · <a href="./README-us.md">🇺🇸 English</a>
 </p>
 
 <p align="center">
@@ -24,75 +28,75 @@
   <a href="https://github.com/dontmint/zahue/stargazers"><img src="https://img.shields.io/github/stars/dontmint/zahue?style=flat-square" alt="Stars" /></a>
 </p>
 
-**ZaHue** applies catalog themes to **Zalo PC** on macOS, Windows, and Linux (unofficial ports):
+**ZaHue** áp dụng theme từ catalog lên **Zalo PC** trên macOS, Windows và Linux (bản port không chính thức):
 
-1. Unpack Zalo `app.asar`
-2. Inject CSS token overrides + optional UI font / size
-3. Keep an `app.asar.bak` for clean Restore
-4. Switch themes without reinstalling Zalo
+1. Giải nén `app.asar` của Zalo
+2. Chèn CSS ghi đè token màu + font / cỡ chữ (tuỳ chọn)
+3. Giữ `app.asar.bak` để khôi phục sạch
+4. Đổi theme mà không cần cài lại Zalo
 
-Inspired by [ZaDark](https://github.com/ncdai/zadark) (MPL-2.0) Electron ASAR patching. Theme palettes are sourced from [terminalcolors.com](https://terminalcolors.com) Alacritty catalogs.
+Kỹ thuật lấy cảm hứng từ [ZaDark](https://github.com/ncdai/zadark) (MPL-2.0) — vá ASAR của Electron. Bảng màu lấy từ catalog Alacritty của [terminalcolors.com](https://terminalcolors.com).
 
-There is **no official Zalo Linux client** — ZaHue supports unofficial AppImage / `.deb` ports when pointed at a writable install.
+**Không có Zalo Linux chính thức** — ZaHue hỗ trợ bản AppImage / `.deb` không chính thức khi trỏ vào thư mục cài đặt có quyền ghi.
 
-## Download
+## Tải về
 
-| Platform | Artifact | How |
-|----------|----------|-----|
-| **macOS** | `ZaHue.dmg` | [Releases](https://github.com/dontmint/zahue/releases) or Actions → **macOS build** |
-| **Windows** | NSIS `.exe` / `.msi` | [Releases](https://github.com/dontmint/zahue/releases) or Actions → **Windows build** |
-| **Linux** | `.AppImage` / `.deb` | [Releases](https://github.com/dontmint/zahue/releases) or Actions → **Linux build** |
+| Nền tảng | File | Cách lấy |
+|----------|------|----------|
+| **macOS** | `ZaHue.dmg` | [Releases](https://github.com/dontmint/zahue/releases) hoặc Actions → **macOS build** |
+| **Windows** | NSIS `.exe` / `.msi` | [Releases](https://github.com/dontmint/zahue/releases) hoặc Actions → **Windows build** |
+| **Linux** | `.AppImage` / `.deb` | [Releases](https://github.com/dontmint/zahue/releases) hoặc Actions → **Linux build** |
 
-First launch on macOS (ad-hoc signed): **Right-click → Open** if Gatekeeper warns.
+Lần mở đầu trên macOS (ký ad-hoc): **Chuột phải → Open** nếu Gatekeeper cảnh báo.
 
-## Features
+## Tính năng
 
-- **80 themes** (18 light / 62 dark) from `themes/terminalcolors.json`
-- Live palette preview in the switcher UI
-- Any installed system font (Maple Mono preferred if present; not required)
-- Font weight + UI size (rem scale)
-- Vietnamese default UI + English toggle
-- Apply / Restore with installer log
-- Native apps — no Node.js runtime for end users
+- **80 theme** (18 sáng / 62 tối) từ `themes/terminalcolors.json`
+- Xem trước bảng màu ngay trong giao diện
+- Mọi font hệ thống đã cài (ưu tiên Maple Mono nếu có; không bắt buộc)
+- Độ đậm font + cỡ chữ giao diện (thang rem)
+- Giao diện mặc định tiếng Việt + chuyển Anh
+- Áp dụng / Khôi phục kèm nhật ký cài đặt
+- Ứng dụng gốc — người dùng cuối không cần Node.js
 
-## ZaHue for macOS (SwiftUI)
+## ZaHue cho macOS (SwiftUI)
 
-Fully **native Swift** installer (~1.6MB app bundle):
+Trình cài đặt **Swift gốc** (~1.6MB):
 
 ```bash
 ./macos/scripts/build-app.sh
 open dist/ZaHue.app
 ```
 
-Or download the DMG from CI / Releases (no local Xcode needed).
+Hoặc tải DMG từ CI / Releases (không cần Xcode trên máy).
 
-- Default chrome follows **System Default** (macOS Light/Dark)
-- Selecting a catalog theme live-previews that palette
-- Apply/Restore uses Swift ASAR extract + HTML/CSS injection
-- Needs **App Management** permission to write under `/Applications/Zalo.app`
+- Giao diện mặc định theo **System Default** (Sáng/Tối của macOS)
+- Chọn theme trong catalog sẽ xem trước bảng màu ngay
+- Áp dụng/Khôi phục dùng Swift giải nén ASAR + chèn HTML/CSS
+- Cần quyền **App Management** để ghi vào `/Applications/Zalo.app`
 
-See [macos/README.md](./macos/README.md).
+Xem [macos/README.md](./macos/README.md).
 
 ## ZaHue Desktop (Windows + Linux)
 
-Cross-platform GUI (React + Rust installer) in `desktop/`:
+GUI đa nền tảng (React + Rust) trong `desktop/`:
 
 ```bash
 cd desktop
 npm install
-npm run tauri:dev      # develop (UI on any OS; Apply needs a local Zalo install)
-npm run tauri:build    # produce platform installers on the matching OS
+npm run tauri:dev      # phát triển (UI chạy mọi OS; Áp dụng cần Zalo trên máy)
+npm run tauri:build    # tạo bộ cài trên đúng hệ điều hành đích
 ```
 
-- **Windows** default path: `%LOCALAPPDATA%\Programs\Zalo`
-- **Linux:** unofficial AppImage/deb ports — writable extract required. Auto-detect tries `/opt/Zalo`, `/usr/{lib,share}/zalo`, `~/.local/share/Zalo`, `~/Applications/Zalo`, `~/zalo-*/app`, `squashfs-root` (see [desktop/README.md](./desktop/README.md)). AppImage mounts are often read-only.
-- **CI:** Actions → **Windows build** / **Linux build** → download `zahue-windows` / `zahue-linux`
+- **Windows** đường dẫn mặc định: `%LOCALAPPDATA%\Programs\Zalo`
+- **Linux:** bản AppImage/deb không chính thức — cần bản giải nén có quyền ghi. Tự dò `/opt/Zalo`, `/usr/{lib,share}/zalo`, `~/.local/share/Zalo`, `~/Applications/Zalo`, `~/zalo-*/app`, `squashfs-root` (xem [desktop/README.md](./desktop/README.md)). Mount AppImage thường chỉ đọc.
+- **CI:** Actions → **Windows build** / **Linux build** → tải `zahue-windows` / `zahue-linux`
 
-See [desktop/README.md](./desktop/README.md).
+Xem [desktop/README.md](./desktop/README.md).
 
-## Optional CLI (developers)
+## CLI tuỳ chọn (cho nhà phát triển)
 
-Node 18+ helper at repo root (macOS + Windows + Linux):
+Công cụ Node 18+ ở thư mục gốc repo (macOS + Windows + Linux):
 
 ```bash
 npm install
@@ -103,7 +107,7 @@ node install.js install <theme-id> [ZaloPath] [--font "Family"] [--weight 600]
 node install.js uninstall [ZaloPath]
 ```
 
-Examples:
+Ví dụ:
 
 ```bash
 node install.js install rose-pine-dawn
@@ -112,35 +116,35 @@ node install.js install rose-pine-moon --font "Segoe UI"
 node install.js uninstall
 ```
 
-Shortcuts in `package.json`: `npm run theme:list`, `theme:dawn`, `theme:moon`, `theme:restore`.
+Phím tắt trong `package.json`: `npm run theme:list`, `theme:dawn`, `theme:moon`, `theme:restore`.
 
-## Important notes
+## Lưu ý quan trọng
 
-- Re-apply after every Zalo update (updates can replace `app.asar`)
-- Keep Zalo’s built-in appearance on **Light** when using light themes (recommended for most palettes)
-- Modifies a third-party app — may conflict with Zalo ToS / future integrity checks
-- Needs write access under `/Applications/Zalo.app` (macOS), the Zalo install folder (Windows), or a writable Linux extract
-- Linux AppImages are often read-only — extract first, then point ZaHue at that folder
+- Áp dụng lại sau mỗi lần Zalo cập nhật (bản cập nhật có thể thay `app.asar`)
+- Giữ giao diện sẵn có của Zalo ở chế độ **Sáng** khi dùng theme sáng (khuyến nghị với hầu hết palette)
+- Chỉnh sửa ứng dụng bên thứ ba — có thể xung đột với điều khoản Zalo / kiểm tra toàn vẹn sau này
+- Cần quyền ghi vào `/Applications/Zalo.app` (macOS), thư mục cài Zalo (Windows), hoặc bản giải nén Linux có quyền ghi
+- AppImage Linux thường chỉ đọc — hãy giải nén trước, rồi trỏ ZaHue vào thư mục đó
 
-## Repo layout
+## Cấu trúc repo
 
 ```
-themes/terminalcolors.json   # 80-theme catalog
-assets/theme.js              # Tiny bootstrap injected into Zalo
-assets/theme.css             # Placeholder (CSS is generated at apply time)
-install.js                   # Optional Node CLI (ASAR extract → inject)
-macos/                       # Native SwiftUI app + build script
-desktop/                     # Tauri + React Windows/Linux app
-docs/assets/                 # README / branding artwork
-.github/workflows/           # macOS + Windows + Linux CI builds
+themes/terminalcolors.json   # Catalog 80 theme
+assets/theme.js              # Bootstrap nhỏ chèn vào Zalo
+assets/theme.css             # Placeholder (CSS được tạo lúc áp dụng)
+install.js                   # CLI Node tuỳ chọn (giải nén ASAR → chèn)
+macos/                       # App SwiftUI gốc + script build
+desktop/                     # App Tauri + React cho Windows/Linux
+docs/assets/                 # Ảnh branding / README
+.github/workflows/           # CI build macOS + Windows + Linux
 ```
 
-## Customize
+## Tuỳ chỉnh
 
-- **Pick a theme:** use ZaHue.app / Desktop GUI, or `node install.js list`
-- **Catalog:** edit / extend `themes/terminalcolors.json`
-- **Fonts:** choose any installed family in the GUI, or `--font` on the CLI
+- **Chọn theme:** dùng ZaHue.app / Desktop GUI, hoặc `node install.js list`
+- **Catalog:** sửa / mở rộng `themes/terminalcolors.json`
+- **Font:** chọn họ font đã cài trong GUI, hoặc `--font` trên CLI
 
-## License
+## Giấy phép
 
-[MPL-2.0](./LICENSE) — technique adapted from ZaDark; palettes from terminalcolors.com.
+[MPL-2.0](./LICENSE) — kỹ thuật dựa trên ZaDark; bảng màu từ terminalcolors.com.
