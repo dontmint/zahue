@@ -34,7 +34,17 @@ npm run tauri:dev
 
 ## Build Windows installer / portable exe
 
-Run on a **Windows** machine (or CI Windows runner):
+### Option A — GitHub Actions (recommended from macOS)
+
+You do **not** need a Windows PC. Push to `main` (or run the workflow manually):
+
+1. Open https://github.com/dontmint/zahue/actions
+2. Choose **Windows build** → **Run workflow**
+3. When it finishes, download the **zahue-windows** artifact (`.msi` / NSIS `.exe`)
+
+The workflow lives at `.github/workflows/windows-build.yml`.
+
+### Option B — Build on a Windows machine
 
 ```bash
 cd windows
@@ -45,9 +55,11 @@ npm run tauri:build
 Artifacts land under:
 
 - `src-tauri/target/release/ZaHue.exe`
-- `src-tauri/target/release/bundle/msi/` (and/or NSIS)
+- `src-tauri/target/release/bundle/msi/`
+- `src-tauri/target/release/bundle/nsis/`
 
-> Building the `.exe` / `.msi` from macOS is not supported out of the box. Cross-compilation is possible but not set up here.
+> Cross-compiling a full Tauri Windows installer **from macOS** is unreliable
+> (needs Windows linkers + NSIS/WiX). Prefer GitHub Actions or a Windows box.
 
 ## Features
 

@@ -122,14 +122,14 @@ Cross-platform GUI twin for Windows (React + Rust installer):
 ```bash
 cd windows
 npm install
-npm run tauri:dev      # develop
+npm run tauri:dev      # develop (UI on any OS; Apply needs Windows Zalo)
 npm run tauri:build    # produce .exe / .msi on a Windows machine
 ```
 
 - Same ASAR unpack + CSS/JS inject technique
 - Default Zalo path: `%LOCALAPPDATA%\Programs\Zalo`
 - Vietnamese / English UI, theme preview, font size, Apply / Restore
-- Build the Windows binary on Windows (or Windows CI)
+- **From macOS:** use GitHub Actions → **Windows build** workflow, then download the `zahue-windows` artifact
 
 See [windows/README.md](./windows/README.md) for ZaHue Windows details.
 
