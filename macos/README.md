@@ -42,8 +42,11 @@ open dist/ZaHue.app
 - Apply writes the theme into Zalo via the native installer
 - Restore puts back `app.asar` from `app.asar.bak`
 - Vietnamese UI by default, with 🇻🇳 / 🇺🇸 language flags
+- **Permission status:** Status row shows green **Permission OK** or red **Permission denied**
+- If App Management is missing, a red banner appears with **Open Settings** (deep-link) + **Recheck**
 
 ## Notes
 
 - Re-apply after Zalo updates (updates can replace `app.asar`)
 - Grant **App Management** if Apply fails to write under `/Applications/Zalo.app`
+- Use the in-app **Open Settings** button, or: System Settings → Privacy & Security → App Management → enable **ZaHue**

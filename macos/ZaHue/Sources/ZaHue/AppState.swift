@@ -47,6 +47,8 @@ final class AppState: ObservableObject {
     @Published var showFontPicker: Bool = false
     @Published var palette: ThemePalette = .system()
     @Published var language: AppLanguage = AppState.loadSavedLanguage()
+    @Published var writePermission: ZaloWritePermission = .unknown
+
 
     private static func loadSavedLanguage() -> AppLanguage {
         if let raw = UserDefaults.standard.string(forKey: "appLanguage"),
@@ -147,6 +149,8 @@ final class AppState: ObservableObject {
 
         selectedThemeID = Self.systemThemeID
         refreshPalette()
+        refreshPermission()
+
     }
 
     func selectSystemTheme() {
@@ -198,10 +202,19 @@ final class AppState: ObservableObject {
         logText = ""
     }
 
+    func refreshPermission() {
+        writePermission = PermissionChecker.check(zaloPath: zaloPath)
+    }
+
+    func openPermissionSettings() {
+        _ = PermissionChecker.openAppManagementSettings()
+    }
+
     func refreshStatus(logOutput: Bool = false) async {
         isBusy = true
         lastError = nil
         defer { isBusy = false }
+        refreshPermission()
         do {
             status = try await InstallerService.shared.status(zaloPath: zaloPath) { [weak self] chunk in
                 guard logOutput else { return }
@@ -221,6 +234,7 @@ final class AppState: ObservableObject {
             if let size = status.fontSizePercent {
                 selectedFontSizePercent = Self.clampFontSize(size)
             }
+            refreshPermission()
             refreshPalette()
         } catch {
             lastError = error.localizedDescription
@@ -233,6 +247,13 @@ final class AppState: ObservableObject {
         isBusy = true
         lastError = nil
         defer { isBusy = false }
+        refreshPermission()
+        if writePermission.isDenied {
+            lastError = t(.permissionDenied)
+            showLogs = true
+            appendLog("\n[error] App Management permission required to modify Zalo.app\n")
+            return
+        }
         clearLog()
         showLogs = true
         do {
@@ -250,6 +271,7 @@ final class AppState: ObservableObject {
         } catch {
             lastError = error.localizedDescription
             appendLog("\n[error] \(error.localizedDescription)\n")
+            refreshPermission()
         }
     }
 
@@ -257,6 +279,13 @@ final class AppState: ObservableObject {
         isBusy = true
         lastError = nil
         defer { isBusy = false }
+        refreshPermission()
+        if writePermission.isDenied {
+            lastError = t(.permissionDenied)
+            showLogs = true
+            appendLog("\n[error] App Management permission required to modify Zalo.app\n")
+            return
+        }
         clearLog()
         showLogs = true
         do {
@@ -268,6 +297,8 @@ final class AppState: ObservableObject {
         } catch {
             lastError = error.localizedDescription
             appendLog("\n[error] \(error.localizedDescription)\n")
+            refreshPermission()
         }
     }
+
 }

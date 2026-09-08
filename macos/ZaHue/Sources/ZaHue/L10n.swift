@@ -74,6 +74,13 @@ enum L10n {
         case filterLight
         case filterDark
         case languageToggleHint
+        case permissionOK
+        case permissionDenied
+        case permissionChecking
+        case permissionBannerTitle
+        case permissionBannerBody
+        case openPermissionSettings
+        case recheckPermission
 
         var en: String {
             switch self {
@@ -120,6 +127,13 @@ enum L10n {
             case .filterLight: return "Light"
             case .filterDark: return "Dark"
             case .languageToggleHint: return "Language"
+            case .permissionOK: return "Permission OK"
+            case .permissionDenied: return "Permission denied"
+            case .permissionChecking: return "Checking…"
+            case .permissionBannerTitle: return "App Management required"
+            case .permissionBannerBody: return "ZaHue needs permission to modify Zalo.app. Open System Settings → Privacy & Security → App Management, enable ZaHue, then click Recheck."
+            case .openPermissionSettings: return "Open Settings"
+            case .recheckPermission: return "Recheck"
             }
         }
 
@@ -168,6 +182,13 @@ enum L10n {
             case .filterLight: return "Sáng"
             case .filterDark: return "Tối"
             case .languageToggleHint: return "Ngôn ngữ"
+            case .permissionOK: return "Đã cấp quyền"
+            case .permissionDenied: return "Chưa cấp quyền"
+            case .permissionChecking: return "Đang kiểm tra…"
+            case .permissionBannerTitle: return "Cần quyền App Management"
+            case .permissionBannerBody: return "ZaHue cần quyền để sửa Zalo.app. Mở Cài đặt Hệ thống → Quyền riêng tư & Bảo mật → App Management, bật ZaHue, rồi nhấn Kiểm tra lại."
+            case .openPermissionSettings: return "Mở Cài đặt"
+            case .recheckPermission: return "Kiểm tra lại"
             }
         }
     }

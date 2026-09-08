@@ -12,6 +12,9 @@ struct ContentView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             settingsPanel
+            if state.writePermission.isDenied {
+                permissionBanner
+            }
             tipBanner
             if state.showLogs {
                 logPanel
@@ -24,11 +27,15 @@ struct ContentView: View {
         .frame(minWidth: 700, idealWidth: 740, minHeight: 600, idealHeight: 660)
         .background(palette.panel)
         .animation(.easeInOut(duration: 0.2), value: state.selectedThemeID)
-                .task {
+        .animation(.easeInOut(duration: 0.2), value: state.writePermission)
+        .task {
             if state.themes.isEmpty {
                 state.bootstrap()
             }
             await state.refreshStatus()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            state.refreshPermission()
         }
         .sheet(isPresented: $state.showThemePicker) {
             ThemePickerSheet()
@@ -144,6 +151,7 @@ struct ContentView: View {
                     TextPill(text: state.currentThemeName)
                     TextPill(text: state.t(.themesCount(state.themes.count)))
                     TextPill(text: state.status.hasBackup ? state.t(.backupOK) : state.t(.noBackup))
+                    permissionStatusPill
                 }
             }
             thinDivider
@@ -269,7 +277,7 @@ struct ContentView: View {
                 )
             }
             .buttonStyle(.plain)
-            .disabled(state.isBusy || !state.status.zaloExists || selectedTheme == nil)
+            .disabled(state.isBusy || !state.status.zaloExists || selectedTheme == nil || state.writePermission.isDenied)
         }
         .frame(height: AppDesign.rowHeight)
         .padding(.horizontal, AppDesign.horizontalInset)
@@ -298,6 +306,126 @@ struct ContentView: View {
                         .strokeBorder(palette.panelLine, lineWidth: 1)
                 )
         )
+    }
+
+    private var permissionStatusPill: some View {
+        let (label, color): (String, Color) = {
+            switch state.writePermission {
+            case .granted:
+                return (state.t(.permissionOK), Color(nsColor: .systemGreen))
+            case .denied:
+                return (state.t(.permissionDenied), palette.danger)
+            case .zaloMissing:
+                return (state.t(.zaloNotFound), palette.danger)
+            case .unknown:
+                return (state.t(.permissionChecking), palette.muted)
+            }
+        }()
+
+        return HStack(spacing: 6) {
+            Circle()
+                .fill(color)
+                .frame(width: 7, height: 7)
+            Text(label)
+                .font(AppDesign.mono(11, weight: .semibold))
+                .foregroundStyle(state.writePermission.isDenied || state.writePermission == .zaloMissing ? palette.danger : palette.foreground)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 10)
+        .frame(height: AppDesign.pillHeight)
+        .background(
+            Capsule(style: .continuous)
+                .fill(state.writePermission.isDenied
+                      ? palette.danger.opacity(0.14)
+                      : palette.panelSoft)
+                .overlay(
+                    Capsule(style: .continuous)
+                        .strokeBorder(
+                            state.writePermission.isDenied ? palette.danger.opacity(0.55) : palette.panelLine,
+                            lineWidth: 1
+                        )
+                )
+        )
+        .accessibilityLabel(label)
+    }
+
+    private var permissionBanner: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "exclamationmark.shield.fill")
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundStyle(palette.danger)
+                    .padding(.top, 1)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(state.t(.permissionBannerTitle))
+                        .font(AppDesign.mono(12, weight: .semibold))
+                        .foregroundStyle(palette.danger)
+                    Text(state.t(.permissionBannerBody))
+                        .font(AppDesign.mono(11))
+                        .foregroundStyle(palette.foreground)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+
+            HStack(spacing: 8) {
+                Button {
+                    state.openPermissionSettings()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text(state.t(.openPermissionSettings))
+                            .font(AppDesign.mono(12, weight: .semibold))
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 12)
+                    .frame(height: AppDesign.pillHeight)
+                    .background(
+                        Capsule(style: .continuous)
+                            .fill(palette.danger)
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    state.refreshPermission()
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 12, weight: .semibold))
+                        Text(state.t(.recheckPermission))
+                            .font(AppDesign.mono(12, weight: .medium))
+                    }
+                    .foregroundStyle(palette.danger)
+                    .padding(.horizontal, 12)
+                    .frame(height: AppDesign.pillHeight)
+                    .background(
+                        Capsule(style: .continuous)
+                            .fill(palette.danger.opacity(0.12))
+                            .overlay(
+                                Capsule(style: .continuous)
+                                    .strokeBorder(palette.danger.opacity(0.45), lineWidth: 1)
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+
+                Spacer(minLength: 0)
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(palette.danger.opacity(0.10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(palette.danger.opacity(0.55), lineWidth: 1.5)
+                )
+        )
+        .accessibilityElement(children: .contain)
     }
 
     private var logPanel: some View {
